@@ -1,15 +1,10 @@
 import { useState } from "react";
 import {
-  Calendar, ClipboardCheck, BarChart3, UserCircle,
-  Users, PieChart, UserCog, Eye, EyeOff, GraduationCap,
-  Moon, Sun,
+  Eye, EyeOff, GraduationCap, Moon, Sun,
 } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
+import campusBg from "../assets/campus-bg.jpg";
 
-const iconMap = {
-  Calendar, ClipboardCheck, BarChart3, UserCircle,
-  Users, PieChart, UserCog,
-};
 
 export default function LoginCard() {
   const [role, setRole] = useState("student");
@@ -18,7 +13,6 @@ export default function LoginCard() {
 
   const theme = roleThemes[role];
 
-  const bg = darkMode ? "bg-slate-900" : "bg-slate-50";
   const cardBg = darkMode ? "bg-slate-800" : "bg-white";
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -26,8 +20,13 @@ export default function LoginCard() {
   const inputBg = darkMode ? "bg-slate-700" : "bg-slate-50";
 
   return (
-    <div className={`min-h-screen ${bg} flex items-center justify-center p-4 transition-colors`}>
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 transition-colors bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${campusBg})` }}
+    >
+      <div className="absolute inset-0 bg-black/40" />
+
+      <div className="relative z-10 w-full max-w-md">
 
         <div className="flex justify-end mb-3">
           <button
@@ -124,18 +123,7 @@ export default function LoginCard() {
             <a href="#" className="text-blue-600 font-medium">{theme.footerLinkText}</a>
           </p>
         </div>
-
-        <div className={`grid grid-cols-4 gap-2 mt-4 ${inputBg} rounded-2xl p-3.5`}>
-          {theme.actions.map((action) => {
-            const Icon = iconMap[action.icon];
-            return (
-              <div key={action.label} className="flex flex-col items-center gap-1 text-center">
-                <Icon size={18} className="text-blue-600" />
-                <span className={`text-[10px] ${textSecondary}`}>{action.label}</span>
-              </div>
-            );
-          })}
-        </div>
+      
       </div>
     </div>
   );
