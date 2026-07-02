@@ -5,6 +5,9 @@ export default function ForgotPassword({ onBack, cardBg, borderColor, inputBg, t
   const [step, setStep] = useState("phone"); // phone -> otp -> reset
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSendOtp = (e) => {
     e.preventDefault();
@@ -20,6 +23,18 @@ export default function ForgotPassword({ onBack, cardBg, borderColor, inputBg, t
 
   const handleResetPassword = (e) => {
     e.preventDefault();
+    setError("");
+
+    if (newPassword.length < 8 || newPassword.length > 12) {
+      setError("Password must be between 8 and 12 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     // TODO: call backend API to set new password
     onBack(); // return to login after success
   };
@@ -92,27 +107,42 @@ export default function ForgotPassword({ onBack, cardBg, borderColor, inputBg, t
       {step === "reset" && (
         <form onSubmit={handleResetPassword}>
           <h2 className={`text-center text-base font-medium ${textPrimary} mb-1`}>New Password</h2>
-          <p className={`text-center text-sm ${textSecondary} mb-5`}>
+          <p className={`text-center text-sm ${textSecondary} mb-1`}>
             Create a new password for your account
+          </p>
+          <p className={`text-center text-xs ${textSecondary} mb-5`}>
+            Must be 8–12 characters
           </p>
 
           <label className={`block text-xs ${textSecondary} mb-1`}>New Password</label>
           <input
             type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Enter new password"
             required
+            minLength={8}
+            maxLength={12}
             className={`w-full px-3 py-2.5 mb-3.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
           />
 
           <label className={`block text-xs ${textSecondary} mb-1`}>Confirm Password</label>
           <input
             type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm new password"
             required
-            className={`w-full px-3 py-2.5 mb-5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
+            minLength={8}
+            maxLength={12}
+            className={`w-full px-3 py-2.5 mb-2 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
           />
 
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+          {error && (
+            <p className="text-red-500 text-xs mb-3">{error}</p>
+          )}
+
+          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors mt-3">
             Reset Password
           </button>
         </form>

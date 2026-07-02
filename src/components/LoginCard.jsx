@@ -135,7 +135,13 @@ export default function LoginCard() {
                 </button>
               </div>
 
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+              <button
+                className={`w-full font-medium text-sm py-2.5 rounded-lg transition-colors ${
+                  darkMode
+                    ? "bg-neutral-300 hover:bg-neutral-200 text-neutral-900"
+                    : "bg-blue-400 hover:bg-blue-500 text-white"
+                }`}
+              >
                 Login
               </button>
 
