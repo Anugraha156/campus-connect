@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, GraduationCap, Moon, Sun } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Moon, Sun, Mail } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
 import { spotlights } from "../config/spotlights";
 import campusBg from "../assets/campus-bg.jpg";
@@ -145,10 +145,12 @@ export default function LoginCard() {
                 <div className={`flex-1 h-px ${borderColor} border-t`} />
               </div>
 
-              <div className="flex gap-3">
-                <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Google</button>
-                <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Microsoft</button>
-              </div>
+              <button
+                className={`w-full py-2.5 border ${borderColor} rounded-lg text-sm font-medium ${textPrimary} flex items-center justify-center gap-2 hover:bg-black/5 transition-colors`}
+              >
+                <Mail size={16} />
+                Continue with Google
+              </button>
             </>
           )}
         </div>
