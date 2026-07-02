@@ -11,16 +11,14 @@ export default function LoginCard() {
 
   const theme = roleThemes[role];
 
-  const cardBg = darkMode ? "bg-slate-800" : "bg-white";
+  const cardBg = darkMode ? "bg-neutral-800" : "bg-neutral-200";
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
-  const borderColor = darkMode ? "border-slate-700" : "border-slate-200";
-  const inputBg = darkMode ? "bg-slate-700" : "bg-slate-50";
-
+  const borderColor = darkMode ? "border-neutral-700" : "border-neutral-300";
+  const inputBg = darkMode ? "bg-neutral-700" : "bg-neutral-50";
   const overlayGradient = darkMode
-    ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
-    : "linear-gradient(90deg, rgba(100,100,105,0.65) 0%, rgba(100,100,105,0.45) 45%, rgba(100,100,105,0.06) 68%, rgba(100,100,105,0) 80%)";
-
+  ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
+  : "linear-gradient(90deg, rgba(60,60,63,0.72) 0%, rgba(60,60,63,0.5) 45%, rgba(60,60,63,0.08) 68%, rgba(60,60,63,0) 80%)";
   return (
     <div
       className="min-h-screen relative bg-cover bg-center"
@@ -134,11 +132,6 @@ export default function LoginCard() {
             <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Google</button>
             <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Microsoft</button>
           </div>
-
-          <p className={`text-center text-xs ${textSecondary}`}>
-            {theme.footerText}{" "}
-            <a href="#" className="text-blue-600 font-medium">{theme.footerLinkText}</a>
-          </p>
         </div>
       </div>
     </div>
