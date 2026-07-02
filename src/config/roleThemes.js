@@ -1,17 +1,17 @@
 export const roleThemes = {
   student: {
-    portalTitle: "CampusConnect",
     portalSubtitle: "Student Portal",
-    tagline: "Stay updated. Get involved. Succeed together.",
+    heading: "Welcome Back!",
+    subheading: "Login to access your student dashboard",
     idLabel: "Registration Number",
     idPlaceholder: "Enter registration number",
     footerText: "New here?",
     footerLinkText: "Register as Student",
   },
   admin: {
-    portalTitle: "Campus Management System",
     portalSubtitle: "Admin Portal",
-    tagline: "Manage. Monitor. Make an impact.",
+    heading: "Welcome Admin!",
+    subheading: "Login to access the admin dashboard",
     idLabel: "Admin ID / Email",
     idPlaceholder: "Enter admin ID or email",
     footerText: "Need help?",

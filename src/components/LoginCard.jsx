@@ -1,10 +1,8 @@
 import { useState } from "react";
-import {
-  Eye, EyeOff, GraduationCap, Moon, Sun,
-} from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Moon, Sun } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
+import { spotlights } from "../config/spotlights";
 import campusBg from "../assets/campus-bg.jpg";
-
 
 export default function LoginCard() {
   const [role, setRole] = useState("student");
@@ -19,26 +17,47 @@ export default function LoginCard() {
   const borderColor = darkMode ? "border-slate-700" : "border-slate-200";
   const inputBg = darkMode ? "bg-slate-700" : "bg-slate-50";
 
+  const overlayGradient = darkMode
+    ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
+    : "linear-gradient(90deg, rgba(100,100,105,0.65) 0%, rgba(100,100,105,0.45) 45%, rgba(100,100,105,0.06) 68%, rgba(100,100,105,0) 80%)";
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 transition-colors bg-cover bg-center relative"
+      className="min-h-screen relative bg-cover bg-center"
       style={{ backgroundImage: `url(${campusBg})` }}
     >
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0" style={{ background: overlayGradient }} />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 flex flex-col h-screen p-10">
+        <p className="text-white text-4xl md:text-5xl font-bold tracking-tight mb-10 drop-shadow-md">
+          CampusConnect
+        </p>
 
-        <div className="flex justify-end mb-3">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`w-9 h-9 rounded-full flex items-center justify-center border ${borderColor} ${cardBg}`}
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun size={18} className="text-slate-300" /> : <Moon size={18} className="text-slate-600" />}
-          </button>
+        <div className="max-w-md">
+          <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-4">
+            Spotlights
+          </p>
+          <div className="flex flex-col gap-5">
+            {spotlights.map((item) => (
+              <div key={item.title}>
+                <p className="text-white text-base font-semibold mb-1 drop-shadow-sm">{item.title}</p>
+                <p className="text-white/75 text-sm">{item.detail}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className={`${cardBg} border ${borderColor} rounded-2xl p-8 transition-colors`}>
+      <div className="absolute top-0 right-0 h-full w-full sm:w-[42%] sm:min-w-[340px] flex items-center justify-center p-6 z-20">
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className={`absolute top-5 right-6 w-9 h-9 rounded-full flex items-center justify-center border ${borderColor} ${cardBg}`}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? <Sun size={18} className="text-slate-300" /> : <Moon size={18} className="text-slate-600" />}
+        </button>
+
+        <div className={`w-full max-w-sm ${cardBg} border ${borderColor} rounded-2xl p-7 shadow-2xl transition-colors`}>
 
           <div className="flex justify-center mb-3">
             <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center">
@@ -46,9 +65,7 @@ export default function LoginCard() {
             </div>
           </div>
 
-          <h1 className={`text-center text-lg font-medium ${textPrimary}`}>{theme.portalTitle}</h1>
-          <p className="text-center text-sm text-blue-600 mt-0.5">{theme.portalSubtitle}</p>
-          <p className={`text-center text-xs ${textSecondary} mt-1.5 mb-5`}>{theme.tagline}</p>
+          <p className="text-center text-sm text-blue-600 mb-5">{theme.portalSubtitle}</p>
 
           <div className={`flex ${inputBg} rounded-lg p-1 mb-5`}>
             <button
@@ -123,7 +140,6 @@ export default function LoginCard() {
             <a href="#" className="text-blue-600 font-medium">{theme.footerLinkText}</a>
           </p>
         </div>
-      
       </div>
     </div>
   );
