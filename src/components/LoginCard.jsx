@@ -3,11 +3,13 @@ import { Eye, EyeOff, GraduationCap, Moon, Sun } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
 import { spotlights } from "../config/spotlights";
 import campusBg from "../assets/campus-bg.jpg";
+import ForgotPassword from "./ForgotPassword";
 
 export default function LoginCard() {
   const [role, setRole] = useState("student");
   const [darkMode, setDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const theme = roleThemes[role];
 
@@ -16,9 +18,11 @@ export default function LoginCard() {
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
   const borderColor = darkMode ? "border-neutral-700" : "border-neutral-300";
   const inputBg = darkMode ? "bg-neutral-700" : "bg-neutral-50";
+
   const overlayGradient = darkMode
-  ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
-  : "linear-gradient(90deg, rgba(60,60,63,0.72) 0%, rgba(60,60,63,0.5) 45%, rgba(60,60,63,0.08) 68%, rgba(60,60,63,0) 80%)";
+    ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
+    : "linear-gradient(90deg, rgba(60,60,63,0.72) 0%, rgba(60,60,63,0.5) 45%, rgba(60,60,63,0.08) 68%, rgba(60,60,63,0) 80%)";
+
   return (
     <div
       className="min-h-screen relative bg-cover bg-center"
@@ -67,7 +71,7 @@ export default function LoginCard() {
 
           <div className={`flex ${inputBg} rounded-lg p-1 mb-5`}>
             <button
-              onClick={() => setRole("student")}
+              onClick={() => { setRole("student"); setShowForgotPassword(false); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 role === "student" ? `${cardBg} ${textPrimary} shadow-sm` : textSecondary
               }`}
@@ -75,7 +79,7 @@ export default function LoginCard() {
               Student
             </button>
             <button
-              onClick={() => setRole("admin")}
+              onClick={() => { setRole("admin"); setShowForgotPassword(false); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 role === "admin" ? `${cardBg} ${textPrimary} shadow-sm` : textSecondary
               }`}
@@ -84,54 +88,69 @@ export default function LoginCard() {
             </button>
           </div>
 
-          <h2 className={`text-center text-base font-medium ${textPrimary} mb-1`}>{theme.heading}</h2>
-          <p className={`text-center text-sm ${textSecondary} mb-5`}>{theme.subheading}</p>
-
-          <label className={`block text-xs ${textSecondary} mb-1`}>{theme.idLabel}</label>
-          <input
-            type="text"
-            placeholder={theme.idPlaceholder}
-            className={`w-full px-3 py-2.5 mb-3.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-
-          <label className={`block text-xs ${textSecondary} mb-1`}>Password</label>
-          <div className="relative mb-2">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              className={`w-full px-3 py-2.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
+          {showForgotPassword ? (
+            <ForgotPassword
+              onBack={() => setShowForgotPassword(false)}
+              cardBg={cardBg}
+              borderColor={borderColor}
+              inputBg={inputBg}
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
+          ) : (
+            <>
+              <h2 className={`text-center text-base font-medium ${textPrimary} mb-1`}>{theme.heading}</h2>
+              <p className={`text-center text-sm ${textSecondary} mb-5`}>{theme.subheading}</p>
 
-          <div className="flex justify-between items-center mb-5 text-xs">
-            <label className={`flex items-center gap-1.5 ${textSecondary}`}>
-              <input type="checkbox" className="w-3.5 h-3.5" />
-              Remember me
-            </label>
-            <a href="#" className="text-blue-600 font-medium">Forgot Password?</a>
-          </div>
+              <label className={`block text-xs ${textSecondary} mb-1`}>{theme.idLabel}</label>
+              <input
+                type="text"
+                placeholder={theme.idPlaceholder}
+                className={`w-full px-3 py-2.5 mb-3.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
+              />
 
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
-            Login
-          </button>
+              <label className={`block text-xs ${textSecondary} mb-1`}>Password</label>
+              <div className="relative mb-2">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  className={`w-full px-3 py-2.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className={`flex-1 h-px ${borderColor} border-t`} />
-            <span className={`text-xs ${textSecondary}`}>or continue with</span>
-            <div className={`flex-1 h-px ${borderColor} border-t`} />
-          </div>
+              <div className="flex justify-between items-center mb-5 text-xs">
+                <label className={`flex items-center gap-1.5 ${textSecondary}`}>
+                  <input type="checkbox" className="w-3.5 h-3.5" />
+                  Remember me
+                </label>
+                <button onClick={() => setShowForgotPassword(true)} className="text-blue-600 font-medium">
+                  Forgot Password?
+                </button>
+              </div>
 
-          <div className="flex gap-3 mb-5">
-            <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Google</button>
-            <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Microsoft</button>
-          </div>
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+                Login
+              </button>
+
+              <div className="flex items-center gap-3 my-5">
+                <div className={`flex-1 h-px ${borderColor} border-t`} />
+                <span className={`text-xs ${textSecondary}`}>or continue with</span>
+                <div className={`flex-1 h-px ${borderColor} border-t`} />
+              </div>
+
+              <div className="flex gap-3">
+                <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Google</button>
+                <button className={`flex-1 py-2 border ${borderColor} rounded-lg text-sm ${textPrimary}`}>Microsoft</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
