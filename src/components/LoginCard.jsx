@@ -139,14 +139,8 @@ export default function LoginCard() {
                 Login
               </button>
 
-              <div className="flex items-center gap-3 my-5">
-                <div className={`flex-1 h-px ${borderColor} border-t`} />
-                <span className={`text-xs ${textSecondary}`}>or continue with</span>
-                <div className={`flex-1 h-px ${borderColor} border-t`} />
-              </div>
-
               <button
-                className={`w-full py-2.5 border ${borderColor} rounded-lg text-sm font-medium ${textPrimary} flex items-center justify-center gap-2 hover:bg-black/5 transition-colors`}
+                className={`w-full mt-5 py-2.5 border ${borderColor} rounded-lg text-sm font-medium ${textPrimary} flex items-center justify-center gap-2 hover:bg-black/5 transition-colors`}
               >
                 <Mail size={16} />
                 Continue with Google
