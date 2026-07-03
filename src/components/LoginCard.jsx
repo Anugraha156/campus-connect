@@ -4,12 +4,18 @@ import { roleThemes } from "../config/roleThemes";
 import { spotlights } from "../config/spotlights";
 import campusBg from "../assets/campus-bg.jpg";
 import ForgotPassword from "./ForgotPassword";
+import { supabase } from "../config/supabaseClient";
 
-export default function LoginCard() {
+export default function LoginCard({ onLoginSuccess }) {
   const [role, setRole] = useState("student");
   const [darkMode, setDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  const [identifier, setIdentifier] = useState(""); // reg number OR admin email
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const theme = roleThemes[role];
 
@@ -22,6 +28,54 @@ export default function LoginCard() {
   const overlayGradient = darkMode
     ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
     : "linear-gradient(90deg, rgba(60,60,63,0.72) 0%, rgba(60,60,63,0.5) 45%, rgba(60,60,63,0.08) 68%, rgba(60,60,63,0) 80%)";
+
+  function resetFormState() {
+    setIdentifier("");
+    setPassword("");
+    setError("");
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      let emailToUse = identifier.trim();
+
+      if (role === "student") {
+        // Look up the real email behind this registration number
+        const { data: email, error: lookupError } = await supabase.rpc(
+          "get_login_email",
+          { reg: identifier.trim() }
+        );
+
+        if (lookupError || !email) {
+          setError("Registration number not found.");
+          setLoading(false);
+          return;
+        }
+        emailToUse = email;
+      }
+
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password,
+      });
+
+      if (signInError) {
+        setError("Incorrect credentials. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+      if (onLoginSuccess) onLoginSuccess({ role, user: data.user });
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  }
 
   return (
     <div
@@ -71,7 +125,7 @@ export default function LoginCard() {
 
           <div className={`flex ${inputBg} rounded-lg p-1 mb-5`}>
             <button
-              onClick={() => { setRole("student"); setShowForgotPassword(false); }}
+              onClick={() => { setRole("student"); setShowForgotPassword(false); resetFormState(); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 role === "student" ? `${cardBg} ${textPrimary} shadow-sm` : textSecondary
               }`}
@@ -79,7 +133,7 @@ export default function LoginCard() {
               Student
             </button>
             <button
-              onClick={() => { setRole("admin"); setShowForgotPassword(false); }}
+              onClick={() => { setRole("admin"); setShowForgotPassword(false); resetFormState(); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 role === "admin" ? `${cardBg} ${textPrimary} shadow-sm` : textSecondary
               }`}
@@ -98,13 +152,20 @@ export default function LoginCard() {
               textSecondary={textSecondary}
             />
           ) : (
-            <>
+            <form onSubmit={handleLogin}>
               <h2 className={`text-center text-base font-medium ${textPrimary} mb-1`}>{theme.heading}</h2>
               <p className={`text-center text-sm ${textSecondary} mb-5`}>{theme.subheading}</p>
+
+              {error && (
+                <p className="text-xs text-red-500 mb-3 text-center">{error}</p>
+              )}
 
               <label className={`block text-xs ${textSecondary} mb-1`}>{theme.idLabel}</label>
               <input
                 type="text"
+                required
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 placeholder={theme.idPlaceholder}
                 className={`w-full px-3 py-2.5 mb-3.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
               />
@@ -113,6 +174,9 @@ export default function LoginCard() {
               <div className="relative mb-2">
                 <input
                   type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   className={`w-full px-3 py-2.5 rounded-lg border ${borderColor} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
                 />
@@ -130,28 +194,31 @@ export default function LoginCard() {
                   <input type="checkbox" className="w-3.5 h-3.5" />
                   Remember me
                 </label>
-                <button onClick={() => setShowForgotPassword(true)} className="text-blue-600 font-medium">
+                <button type="button" onClick={() => setShowForgotPassword(true)} className="text-blue-600 font-medium">
                   Forgot Password?
                 </button>
               </div>
 
               <button
-                className={`w-full font-medium text-sm py-2.5 rounded-lg transition-colors ${
+                type="submit"
+                disabled={loading}
+                className={`w-full font-medium text-sm py-2.5 rounded-lg transition-colors disabled:opacity-60 ${
                   darkMode
                     ? "bg-neutral-300 hover:bg-neutral-200 text-neutral-900"
                     : "bg-blue-400 hover:bg-blue-500 text-white"
                 }`}
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
 
               <button
+                type="button"
                 className={`w-full mt-5 py-2.5 border ${borderColor} rounded-lg text-sm font-medium ${textPrimary} flex items-center justify-center gap-2 hover:bg-black/5 transition-colors`}
               >
                 <Mail size={16} />
                 Continue with Google
               </button>
-            </>
+            </form>
           )}
         </div>
       </div>
