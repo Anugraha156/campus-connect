@@ -1,20 +1,22 @@
 import { useState } from "react";
 import LoginCard from "./components/LoginCard";
+import StudentDashboard from "./components/dashboard/StudentDashboard";
 
 function App() {
   const [session, setSession] = useState(null);
 
   function handleLoginSuccess({ role, user }) {
-    console.log("Login success:", role, user);
     setSession({ role, user });
   }
 
-  if (session) {
+  if (session?.role === "student") {
+    return <StudentDashboard user={session.user} />;
+  }
+
+  if (session?.role === "admin") {
     return (
-      <div style={{ padding: "2rem", color: "white" }}>
-        <h1>Logged in as {session.role}</h1>
-        <p>User ID: {session.user.id}</p>
-        <p>Email: {session.user.email}</p>
+      <div style={{ padding: "2rem" }}>
+        <h1>Admin dashboard coming soon</h1>
       </div>
     );
   }
