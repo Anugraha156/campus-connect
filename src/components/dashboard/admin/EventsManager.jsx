@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, QrCode } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
+import EventQRModal from "./EventQRModal";
 
 const emptyForm = { title: "", description: "", venue: "", start_time: "", seats_total: 0, award_title: "" };
 
@@ -9,6 +10,7 @@ export default function EventsManager({ darkMode }) {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [qrEvent, setQrEvent] = useState(null);
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -92,6 +94,7 @@ export default function EventsManager({ darkMode }) {
                 {item.award_title && <p className={`text-xs ${textSecondary} mt-1`}>Award: {item.award_title}</p>}
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
+                <button onClick={() => setQrEvent(item)} className="text-blue-500"><QrCode size={16} /></button>
                 <button onClick={() => openEdit(item)} className={textSecondary}><Pencil size={16} /></button>
                 <button onClick={() => handleDelete(item.id)} className="text-red-500"><Trash2 size={16} /></button>
               </div>
@@ -163,6 +166,10 @@ export default function EventsManager({ darkMode }) {
             </button>
           </form>
         </div>
+      )}
+
+      {qrEvent && (
+        <EventQRModal event={qrEvent} darkMode={darkMode} onClose={() => setQrEvent(null)} />
       )}
     </div>
   );
