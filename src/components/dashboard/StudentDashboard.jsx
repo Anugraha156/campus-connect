@@ -39,9 +39,9 @@ export default function StudentDashboard({ user }) {
   function renderTab() {
     switch (activeTab) {
       case "upcoming":
-        return <UpcomingEvents darkMode={darkMode} />;
+        return <UpcomingEvents darkMode={darkMode} user={user} />;
       case "my-events":
-        return <MyEvents darkMode={darkMode} />;
+        return <MyEvents darkMode={darkMode} user={user} />;
       case "news":
         return <News darkMode={darkMode} />;
       case "certificates":
