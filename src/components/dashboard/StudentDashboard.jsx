@@ -7,6 +7,7 @@ import MyEvents from "./tabs/MyEvents";
 import News from "./tabs/News";
 import Certificates from "./tabs/Certificates";
 import { bannerImages } from "../../config/bannerImages";
+import { dashboardTabs } from "../../config/dashboardNav";
 
 export default function StudentDashboard({ user }) {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -53,6 +54,7 @@ export default function StudentDashboard({ user }) {
   return (
     <div className={`min-h-screen ${pageBg}`}>
       <Navbar
+        tabs={dashboardTabs}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         darkMode={darkMode}

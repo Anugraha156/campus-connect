@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, GraduationCap, Moon, Sun, Mail } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
-import { spotlights } from "../config/spotlights";
 import campusBg from "../assets/campus-bg.jpg";
 import ForgotPassword from "./ForgotPassword";
 import { supabase } from "../config/supabaseClient";
@@ -16,6 +15,7 @@ export default function LoginCard({ onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [spotlights, setSpotlights] = useState([]);
 
   const theme = roleThemes[role];
 
@@ -28,6 +28,14 @@ export default function LoginCard({ onLoginSuccess }) {
   const overlayGradient = darkMode
     ? "linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0) 80%)"
     : "linear-gradient(90deg, rgba(60,60,63,0.72) 0%, rgba(60,60,63,0.5) 45%, rgba(60,60,63,0.08) 68%, rgba(60,60,63,0) 80%)";
+
+  useEffect(() => {
+    async function fetchSpotlights() {
+      const { data } = await supabase.from("spotlights").select("*").order("sort_order");
+      setSpotlights(data || []);
+    }
+    fetchSpotlights();
+  }, []);
 
   function resetFormState() {
     setIdentifier("");
@@ -44,7 +52,6 @@ export default function LoginCard({ onLoginSuccess }) {
       let emailToUse = identifier.trim();
 
       if (role === "student") {
-        // Look up the real email behind this registration number
         const { data: email, error: lookupError } = await supabase.rpc(
           "get_login_email",
           { reg: identifier.trim() }
@@ -95,7 +102,7 @@ export default function LoginCard({ onLoginSuccess }) {
           </p>
           <div className="flex flex-col gap-5">
             {spotlights.map((item) => (
-              <div key={item.title}>
+              <div key={item.id}>
                 <p className="text-white text-base font-semibold mb-1 drop-shadow-sm">{item.title}</p>
                 <p className="text-white/75 text-sm">{item.detail}</p>
               </div>

@@ -1,7 +1,6 @@
 import { GraduationCap, Moon, Sun, LogOut } from "lucide-react";
-import { dashboardTabs } from "../../config/dashboardNav";
 
-export default function Navbar({ activeTab, setActiveTab, darkMode, setDarkMode, onLogout }) {
+export default function Navbar({ tabs, activeTab, setActiveTab, darkMode, setDarkMode, onLogout }) {
   const bg = darkMode ? "bg-neutral-900" : "bg-white";
   const border = darkMode ? "border-neutral-700" : "border-neutral-200";
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
@@ -34,7 +33,7 @@ export default function Navbar({ activeTab, setActiveTab, darkMode, setDarkMode,
       </div>
 
       <div className="flex gap-1 px-6 overflow-x-auto">
-        {dashboardTabs.map((tab) => {
+        {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LoginCard from "./components/LoginCard";
 import StudentDashboard from "./components/dashboard/StudentDashboard";
+import AdminDashboard from "./components/dashboard/AdminDashboard";
 
 function App() {
   const [session, setSession] = useState(null);
@@ -14,11 +15,7 @@ function App() {
   }
 
   if (session?.role === "admin") {
-    return (
-      <div style={{ padding: "2rem" }}>
-        <h1>Admin dashboard coming soon</h1>
-      </div>
-    );
+    return <AdminDashboard user={session.user} />;
   }
 
   return <LoginCard onLoginSuccess={handleLoginSuccess} />;
