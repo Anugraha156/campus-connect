@@ -76,6 +76,21 @@ export default function LoginCard({ onLoginSuccess }) {
         return;
       }
 
+      // Verify this account actually belongs to the selected role
+      const tableToCheck = role === "admin" ? "admins" : "students";
+      const { data: roleRow } = await supabase
+        .from(tableToCheck)
+        .select("id")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!roleRow) {
+        await supabase.auth.signOut();
+        setError(`This account is not registered as ${role === "admin" ? "an admin" : "a student"}.`);
+        setLoading(false);
+        return;
+      }
+
       setLoading(false);
       if (onLoginSuccess) onLoginSuccess({ role, user: data.user });
     } catch (err) {
