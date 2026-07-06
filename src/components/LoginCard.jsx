@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, GraduationCap, Moon, Sun, Mail } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Moon, Sun } from "lucide-react";
 import { roleThemes } from "../config/roleThemes";
 import campusBg from "../assets/campus-bg.jpg";
 import ForgotPassword from "./ForgotPassword";
@@ -231,14 +231,6 @@ export default function LoginCard({ onLoginSuccess }) {
                 }`}
               >
                 {loading ? "Logging in..." : "Login"}
-              </button>
-
-              <button
-                type="button"
-                className={`w-full mt-5 py-2.5 border ${borderColor} rounded-lg text-sm font-medium ${textPrimary} flex items-center justify-center gap-2 hover:bg-black/5 transition-colors`}
-              >
-                <Mail size={16} />
-                Continue with Google
               </button>
             </form>
           )}
