@@ -16,16 +16,14 @@ export default function CampusBanner({ studentName, darkMode, images = [] }) {
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
 
   return (
-    <div className="flex flex-col sm:flex-row h-48 sm:h-56 overflow-hidden">
-      <div className={`flex-1 ${bg} flex flex-col justify-center px-8`}>
-        <div className="-translate-y-2">
-          <p className={`text-xs uppercase tracking-widest ${textSecondary} mb-2`}>
-            Welcome back
-          </p>
-          <h1 className={`text-2xl sm:text-3xl font-bold ${textPrimary}`}>
-            {studentName || "Student"}
-          </h1>
-        </div>
+    <div className="flex flex-col sm:flex-row h-28 sm:h-32 overflow-hidden">
+      <div className={`flex-1 ${bg} flex flex-col justify-center px-6`}>
+        <p className={`text-[10px] uppercase tracking-widest ${textSecondary} mb-0.5`}>
+          Welcome back
+        </p>
+        <h1 className={`text-lg sm:text-xl font-semibold ${textPrimary}`}>
+          {studentName || "Student"}
+        </h1>
       </div>
 
       <div className="flex-1 relative overflow-hidden">

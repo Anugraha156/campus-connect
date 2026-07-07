@@ -130,7 +130,9 @@ export default function UpcomingEvents({ darkMode, user }) {
 
   return (
     <div className="p-6">
-      <p className={`text-xs ${textSecondary} mb-4`}>Click on an event to read the full details.</p>
+      <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
+      <span className="text-blue-500"></span> Click on an event to read the full details
+      </p>
 
       <div className="space-y-3">
         {events.map((item) => {
