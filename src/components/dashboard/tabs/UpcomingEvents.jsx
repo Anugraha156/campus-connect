@@ -21,7 +21,7 @@ export default function UpcomingEvents({ darkMode, user }) {
       .from("events")
       .select("*")
       .gt("start_time", new Date().toISOString())
-      .order("start_time");
+      .order("start_time", { ascending: true });
 
     const { data: regData } = await supabase
       .from("registrations")
@@ -129,25 +129,29 @@ export default function UpcomingEvents({ darkMode, user }) {
   }
 
   return (
-    <div className="p-6 space-y-3">
-      {events.map((item) => {
-        const myStatus = myRegistrations[item.id];
+    <div className="p-6">
+      <p className={`text-xs ${textSecondary} mb-4`}>Click on an event to read the full details.</p>
 
-        return (
-          <button
-            key={item.id}
-            onClick={() => setSelected(item)}
-            className={`${cardBg} border ${border} rounded-xl p-4 text-left w-full hover:border-blue-400 transition-colors`}
-          >
-            <p className={`font-medium ${textPrimary}`}>{item.title}</p>
-            <p className={`text-sm ${textSecondary} mt-1`}>
-              {item.venue} • {new Date(item.start_time).toLocaleString()}
-            </p>
-            {myStatus === "registered" && <span className="text-xs text-emerald-500 font-medium mt-1 block">✓ Registered</span>}
-            {myStatus === "waitlisted" && <span className="text-xs text-amber-500 font-medium mt-1 block">On waitlist</span>}
-          </button>
-        );
-      })}
+      <div className="space-y-3">
+        {events.map((item) => {
+          const myStatus = myRegistrations[item.id];
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => setSelected(item)}
+              className={`${cardBg} border ${border} rounded-xl p-4 text-left w-full hover:border-blue-400 transition-colors`}
+            >
+              <p className={`font-medium ${textPrimary}`}>{item.title}</p>
+              <p className={`text-sm ${textSecondary} mt-1`}>
+                {item.venue} • {new Date(item.start_time).toLocaleString()}
+              </p>
+              {myStatus === "registered" && <span className="text-xs text-emerald-500 font-medium mt-1 block">✓ Registered</span>}
+              {myStatus === "waitlisted" && <span className="text-xs text-amber-500 font-medium mt-1 block">On waitlist</span>}
+            </button>
+          );
+        })}
+      </div>
 
       {selected && (
         <DetailModal darkMode={darkMode} onClose={() => setSelected(null)}>
