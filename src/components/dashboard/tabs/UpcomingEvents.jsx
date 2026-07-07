@@ -48,7 +48,6 @@ export default function UpcomingEvents({ darkMode, user }) {
     setWaitlistPositions(positions);
     setLoading(false);
 
-    // keep the open modal's data fresh after register/cancel
     if (selected) {
       const updated = (eventsData || []).find((e) => e.id === selected.id);
       if (updated) setSelected(updated);
@@ -132,7 +131,6 @@ export default function UpcomingEvents({ darkMode, user }) {
   return (
     <div className="p-6 space-y-3">
       {events.map((item) => {
-        const seatsLeft = item.seats_total - item.seats_filled;
         const myStatus = myRegistrations[item.id];
 
         return (
@@ -142,12 +140,8 @@ export default function UpcomingEvents({ darkMode, user }) {
             className={`${cardBg} border ${border} rounded-xl p-4 text-left w-full hover:border-blue-400 transition-colors`}
           >
             <p className={`font-medium ${textPrimary}`}>{item.title}</p>
-            <p className={`text-sm ${textSecondary} mt-1 line-clamp-2`}>{item.description}</p>
-            <p className={`text-sm ${textSecondary} mt-2`}>
+            <p className={`text-sm ${textSecondary} mt-1`}>
               {item.venue} • {new Date(item.start_time).toLocaleString()}
-            </p>
-            <p className={`text-xs mt-1 ${seatsLeft > 0 ? textSecondary : "text-amber-500"}`}>
-              {seatsLeft > 0 ? `${seatsLeft} seats left` : "Full — waitlist available"}
             </p>
             {myStatus === "registered" && <span className="text-xs text-emerald-500 font-medium mt-1 block">✓ Registered</span>}
             {myStatus === "waitlisted" && <span className="text-xs text-amber-500 font-medium mt-1 block">On waitlist</span>}
@@ -157,18 +151,26 @@ export default function UpcomingEvents({ darkMode, user }) {
 
       {selected && (
         <DetailModal darkMode={darkMode} onClose={() => setSelected(null)}>
-          <h2 className={`text-xl font-semibold ${textPrimary} mb-2 pr-8`}>{selected.title}</h2>
+          <h2 className={`text-xl font-semibold ${textPrimary} mb-3 pr-8`}>{selected.title}</h2>
+
           <p className={`text-sm ${textPrimary} whitespace-pre-wrap leading-relaxed mb-4`}>{selected.description}</p>
-          <div className={`text-sm ${textSecondary} space-y-1`}>
-            <p>📍 {selected.venue}</p>
-            <p>🕒 {new Date(selected.start_time).toLocaleString()}</p>
+
+          <div className={`text-sm ${textSecondary} space-y-1.5 border-t ${border} pt-4`}>
+            <p>📍 <span className={textPrimary}>{selected.venue}</span></p>
+            <p>🕒 <span className={textPrimary}>{new Date(selected.start_time).toLocaleString()}</span></p>
             <p>
-              {selected.seats_total - selected.seats_filled > 0
-                ? `${selected.seats_total - selected.seats_filled} seats left`
-                : "Full — waitlist available"}
+              🎟️{" "}
+              <span className={textPrimary}>
+                {selected.seats_total - selected.seats_filled > 0
+                  ? `${selected.seats_total - selected.seats_filled} of ${selected.seats_total} seats left`
+                  : `Full (${selected.seats_total}/${selected.seats_total}) — waitlist available`}
+              </span>
             </p>
-            {selected.award_title && <p>🏅 {selected.award_title}</p>}
+            {selected.award_title && (
+              <p>🏅 <span className={textPrimary}>{selected.award_title}</span></p>
+            )}
           </div>
+
           {renderActions(selected)}
         </DetailModal>
       )}
