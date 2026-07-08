@@ -38,14 +38,14 @@ export default function Navbar({ tabs, activeTab, setActiveTab, darkMode, setDar
           const isActive = activeTab === tab.id;
           return (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                isActive
-                  ? "border-blue-500 text-blue-500"
-                  : `border-transparent ${textSecondary} hover:text-blue-400`
-              }`}
-            >
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+          isActive
+          ? "text-blue-500"
+          : `${textSecondary} hover:text-blue-400`
+      }`}
+      >
               <Icon size={16} />
               {tab.label}
             </button>

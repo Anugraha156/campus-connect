@@ -17,7 +17,6 @@ export default function News({ darkMode }) {
   const cardBg = darkMode ? "bg-neutral-800" : "bg-white";
   const border = darkMode ? "border-neutral-700" : "border-neutral-200";
   const placeholderBg = darkMode ? "bg-neutral-700" : "bg-neutral-200";
-  const badgeBg = darkMode ? "bg-blue-500/15" : "bg-blue-50";
 
   useEffect(() => {
     async function fetchNews() {
@@ -44,7 +43,7 @@ export default function News({ darkMode }) {
   function CategoryBadge({ category }) {
     if (!category) return null;
     return (
-      <span className={`inline-block text-[10px] font-semibold text-blue-500 uppercase tracking-wide ${badgeBg} px-2 py-0.5 rounded-full`}>
+      <span className="inline-block text-[10px] font-semibold text-blue-500 uppercase tracking-wide">
         {category}
       </span>
     );
