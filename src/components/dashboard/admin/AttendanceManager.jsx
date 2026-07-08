@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Trophy } from "lucide-react";
+import { Check, X, Trophy, UserMinus, ArrowUpCircle, Search, UserPlus } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 
 export default function AttendanceManager({ darkMode }) {
@@ -7,11 +7,14 @@ export default function AttendanceManager({ darkMode }) {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [registrations, setRegistrations] = useState([]);
   const [attendedIds, setAttendedIds] = useState(new Set());
-  const [winners, setWinners] = useState({}); // student_id -> winner title
+  const [winners, setWinners] = useState({});
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [winnerFormId, setWinnerFormId] = useState(null);
   const [winnerTitle, setWinnerTitle] = useState("");
+  const [addRegNumber, setAddRegNumber] = useState("");
+  const [addBusy, setAddBusy] = useState(false);
+  const [addMessage, setAddMessage] = useState("");
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -96,7 +99,6 @@ export default function AttendanceManager({ darkMode }) {
       next.delete(studentId);
       return next;
     });
-    // participation cert auto-revoked by trigger; refresh winner state too in case it was a winner
     fetchRegistrationsAndAttendance(selectedEventId);
     setBusyId(null);
   }
@@ -137,9 +139,66 @@ export default function AttendanceManager({ darkMode }) {
     setBusyId(null);
   }
 
+  async function cancelRegistration(studentId) {
+    if (!confirm("Remove this student's registration entirely? This cannot be undone.")) return;
+    setBusyId(studentId);
+    const { error } = await supabase.rpc("cancel_registration", {
+      p_event_id: selectedEventId,
+      p_student_id: studentId,
+    });
+    if (error) alert(error.message);
+    fetchRegistrationsAndAttendance(selectedEventId);
+    setBusyId(null);
+  }
+
+  async function promoteRegistration(studentId) {
+    setBusyId(studentId);
+    const { error } = await supabase.rpc("promote_registration", {
+      p_event_id: selectedEventId,
+      p_student_id: studentId,
+    });
+    if (error) alert(error.message);
+    fetchRegistrationsAndAttendance(selectedEventId);
+    setBusyId(null);
+  }
+
+  async function handleAddStudent() {
+    if (!addRegNumber.trim()) return;
+    setAddBusy(true);
+    setAddMessage("");
+
+    const { data: student, error: lookupError } = await supabase
+      .from("students")
+      .select("id, full_name")
+      .eq("reg_number", addRegNumber.trim())
+      .single();
+
+    if (lookupError || !student) {
+      setAddMessage("No student found with that registration number.");
+      setAddBusy(false);
+      return;
+    }
+
+    const { data: status, error: regError } = await supabase.rpc("register_for_event", {
+      p_event_id: selectedEventId,
+      p_student_id: student.id,
+    });
+
+    if (regError) {
+      setAddMessage(regError.message);
+    } else if (status === "already_registered") {
+      setAddMessage(`${student.full_name} is already registered.`);
+    } else {
+      setAddMessage(`${student.full_name} added as ${status}.`);
+      setAddRegNumber("");
+      fetchRegistrationsAndAttendance(selectedEventId);
+    }
+    setAddBusy(false);
+  }
+
   return (
     <div className="p-6">
-      <h2 className={`text-lg font-semibold ${textPrimary} mb-4`}>Manual Attendance & Winners</h2>
+      <h2 className={`text-lg font-semibold ${textPrimary} mb-4`}>Manual Attendance & Registrations</h2>
 
       {events.length === 0 ? (
         <p className={textSecondary}>No events created yet.</p>
@@ -159,13 +218,40 @@ export default function AttendanceManager({ darkMode }) {
           </select>
 
           {selectedEvent && !eventHasStarted && (
-            <p className="text-xs text-amber-500 mb-5">
-              This event starts {new Date(selectedEvent.start_time).toLocaleString()} ,  attendance can be marked once it begins.
+            <p className="text-xs text-amber-500 mb-4">
+               This event starts {new Date(selectedEvent.start_time).toLocaleString()} — attendance can be marked once it begins.
             </p>
           )}
           {selectedEvent && eventHasStarted && (
-            <p className={`text-xs ${textSecondary} mb-5`}>Event started — attendance can be marked.</p>
+            <p className={`text-xs ${textSecondary} mb-4`}>Event started — attendance can be marked.</p>
           )}
+
+          {/* Add student manually */}
+          <div className={`${cardBg} border ${border} rounded-xl p-4 mb-5 max-w-md`}>
+            <p className={`text-xs font-medium ${textSecondary} mb-2 flex items-center gap-1.5`}>
+              <UserPlus size={14} /> Add student to this event
+            </p>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${textSecondary}`} />
+                <input
+                  value={addRegNumber}
+                  onChange={(e) => setAddRegNumber(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddStudent()}
+                  placeholder="Registration number"
+                  className={`w-full pl-8 pr-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+                />
+              </div>
+              <button
+                onClick={handleAddStudent}
+                disabled={addBusy}
+                className="text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
+              >
+                Add
+              </button>
+            </div>
+            {addMessage && <p className={`text-xs mt-2 ${textSecondary}`}>{addMessage}</p>}
+          </div>
 
           {loading ? (
             <p className={textSecondary}>Loading...</p>
@@ -179,17 +265,18 @@ export default function AttendanceManager({ darkMode }) {
                 const isBusy = busyId === reg.student_id;
                 const winnerTitleForStudent = winners[reg.student_id];
                 const isEditingWinner = winnerFormId === reg.student_id;
+                const isWaitlisted = reg.status === "waitlisted";
 
                 return (
                   <div
                     key={reg.id}
                     className={`${cardBg} border ${border} rounded-xl p-3`}
                   >
-                    <div className="flex justify-between items-center gap-3">
+                    <div className="flex justify-between items-center gap-3 flex-wrap">
                       <div className="min-w-0">
                         <p className={`font-medium ${textPrimary} truncate`}>{student?.full_name}</p>
                         <p className={`text-xs ${textSecondary}`}>
-                          {student?.reg_number} • {reg.status === "waitlisted" ? "Waitlisted" : "Registered"}
+                          {student?.reg_number} • {isWaitlisted ? "Waitlisted" : "Registered"}
                         </p>
                         {winnerTitleForStudent && (
                           <p className="text-xs font-medium text-amber-500 mt-1 flex items-center gap-1">
@@ -198,24 +285,36 @@ export default function AttendanceManager({ darkMode }) {
                         )}
                       </div>
 
-                      <div className="flex gap-2 shrink-0">
+                      <div className="flex gap-2 flex-wrap shrink-0">
+                        {isWaitlisted && (
+                          <button
+                            onClick={() => promoteRegistration(reg.student_id)}
+                            disabled={isBusy}
+                            className="flex items-center gap-1.5 text-xs font-medium text-blue-500 border border-blue-500/30 px-3 py-1.5 rounded-lg disabled:opacity-60"
+                          >
+                            <ArrowUpCircle size={14} /> Promote
+                          </button>
+                        )}
+
                         {isAttended ? (
                           <button
                             onClick={() => removeAttendance(reg.student_id)}
                             disabled={isBusy}
                             className="flex items-center gap-1.5 text-xs font-medium text-red-500 border border-red-500/30 px-3 py-1.5 rounded-lg disabled:opacity-60"
                           >
-                            <X size={14} /> Remove
+                            <X size={14} /> Remove attendance
                           </button>
                         ) : (
-                          <button
-                            onClick={() => markPresent(reg.student_id)}
-                            disabled={isBusy || !eventHasStarted}
-                            title={!eventHasStarted ? "Event hasn't started yet" : ""}
-                            className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 border border-emerald-500/30 px-3 py-1.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
-                          >
-                            <Check size={14} /> Mark Present
-                          </button>
+                          !isWaitlisted && (
+                            <button
+                              onClick={() => markPresent(reg.student_id)}
+                              disabled={isBusy || !eventHasStarted}
+                              title={!eventHasStarted ? "Event hasn't started yet" : ""}
+                              className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 border border-emerald-500/30 px-3 py-1.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              <Check size={14} /> Mark Present
+                            </button>
+                          )
                         )}
 
                         {isAttended && !winnerTitleForStudent && (
@@ -237,6 +336,14 @@ export default function AttendanceManager({ darkMode }) {
                             Remove winner
                           </button>
                         )}
+
+                        <button
+                          onClick={() => cancelRegistration(reg.student_id)}
+                          disabled={isBusy}
+                          className={`flex items-center gap-1.5 text-xs font-medium ${textSecondary} border ${border} px-3 py-1.5 rounded-lg disabled:opacity-60`}
+                        >
+                          <UserMinus size={14} /> Cancel registration
+                        </button>
                       </div>
                     </div>
 

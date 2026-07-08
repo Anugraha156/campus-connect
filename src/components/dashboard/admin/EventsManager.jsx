@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, QrCode } from "lucide-react";
+import { Plus, Pencil, Trash2, X, QrCode, UserPlus } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import EventQRModal from "./EventQRModal";
+import BulkRegister from "./BulkRegister";
 
 const emptyForm = { title: "", description: "", venue: "", start_time: "", seats_total: 0, award_title: "" };
+
+function toLocalDatetimeInputValue(isoString) {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 16);
+}
 
 export default function EventsManager({ darkMode }) {
   const [events, setEvents] = useState([]);
@@ -11,6 +20,7 @@ export default function EventsManager({ darkMode }) {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [qrEvent, setQrEvent] = useState(null);
+  const [showBulkRegister, setShowBulkRegister] = useState(false);
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -37,7 +47,7 @@ export default function EventsManager({ darkMode }) {
       title: item.title,
       description: item.description || "",
       venue: item.venue || "",
-      start_time: item.start_time ? item.start_time.slice(0, 16) : "",
+      start_time: toLocalDatetimeInputValue(item.start_time),
       seats_total: item.seats_total,
       award_title: item.award_title || "",
     });
@@ -71,12 +81,20 @@ export default function EventsManager({ darkMode }) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className={`text-lg font-semibold ${textPrimary}`}>Events</h2>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
-        >
-          <Plus size={16} /> Add Event
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowBulkRegister(true)}
+            className={`flex items-center gap-1.5 border ${border} ${textPrimary} text-sm font-medium px-4 py-2 rounded-lg hover:bg-black/5`}
+          >
+            <UserPlus size={16} /> Bulk Register
+          </button>
+          <button
+            onClick={openNew}
+            className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
+          >
+            <Plus size={16} /> Add Event
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -170,6 +188,10 @@ export default function EventsManager({ darkMode }) {
 
       {qrEvent && (
         <EventQRModal event={qrEvent} darkMode={darkMode} onClose={() => setQrEvent(null)} />
+      )}
+
+      {showBulkRegister && (
+        <BulkRegister darkMode={darkMode} onClose={() => setShowBulkRegister(false)} />
       )}
     </div>
   );
