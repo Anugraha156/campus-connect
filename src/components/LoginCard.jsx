@@ -213,8 +213,7 @@ export default function LoginCard({ onLoginSuccess }) {
 
               <div className="flex justify-between items-center mb-5 text-xs">
                 <label className={`flex items-center gap-1.5 ${textSecondary}`}>
-                  <input type="checkbox" className="w-3.5 h-3.5" />
-                  Remember me
+                  
                 </label>
                 <button type="button" onClick={() => setShowForgotPassword(true)} className="text-blue-600 font-medium">
                   Forgot Password?
