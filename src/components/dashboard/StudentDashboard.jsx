@@ -45,7 +45,7 @@ export default function StudentDashboard({ user }) {
       case "news":
         return <News darkMode={darkMode} />;
       case "certificates":
-        return <Certificates darkMode={darkMode} />;
+        return <Certificates darkMode={darkMode} user={user} />;
       default:
         return null;
     }
