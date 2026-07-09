@@ -243,7 +243,7 @@ export default function AttendanceManager({ darkMode }) {
 
           {selectedEvent && !eventHasStarted && (
             <p className="text-xs text-amber-500 mb-1 flex items-center gap-1.5">
-              <Clock size={13} /> This event starts {new Date(selectedEvent.start_time).toLocaleString()}. Attendance can be marked once it begins.
+               This event starts {new Date(selectedEvent.start_time).toLocaleString()}. Attendance can be marked once it begins.
             </p>
           )}
           {selectedEvent && eventHasStarted && (

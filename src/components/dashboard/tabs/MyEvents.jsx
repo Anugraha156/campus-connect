@@ -179,7 +179,7 @@ export default function MyEvents({ darkMode, user }) {
   return (
     <div className="p-6">
       <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
-        <Info size={13} className="text-blue-500" /> Click on an event to read the full details
+       
       </p>
 
       <div className="flex flex-wrap items-center gap-3 mb-5">

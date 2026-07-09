@@ -64,9 +64,9 @@ function renderTab() {
         setDarkMode={setDarkMode}
         onLogout={handleLogout}
       />
-      <div className="px-8 py-6">
-        <p className={`text-xs uppercase tracking-widest ${textSecondary} mb-1`}>Admin Console</p>
-        <h1 className={`text-2xl font-bold ${textPrimary}`}>Welcome, {adminName || "Admin"}</h1>
+      <div className="px-8 py-5">
+      <p className={`text-[10px] uppercase tracking-widest ${textSecondary} mb-0.5`}>Admin Console</p>
+      <h1 className={`text-lg font-semibold ${textPrimary}`}>Welcome, {adminName || "Admin"}</h1>
       </div>
       <div className="max-w-6xl mx-auto">{renderTab()}</div>
     </div>

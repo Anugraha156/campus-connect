@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { supabase } from "../../../config/supabaseClient";
 
 export default function AdminFeedback({ darkMode }) {
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState("");
+  const [monthFilter, setMonthFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [attendedCount, setAttendedCount] = useState(0);
   const [notAttendedCount, setNotAttendedCount] = useState(0);
@@ -22,13 +23,48 @@ export default function AdminFeedback({ darkMode }) {
 
   useEffect(() => {
     async function fetchEvents() {
-      const { data } = await supabase.from("events").select("id, title, start_time").order("start_time", { ascending: false });
+      const { data } = await supabase
+        .from("events")
+        .select("id, title, start_time")
+        .order("start_time", { ascending: true });
       setEvents(data || []);
       if (data && data.length > 0) setSelectedEventId(data[0].id);
       setLoading(false);
     }
     fetchEvents();
   }, []);
+
+  const availableMonths = useMemo(() => {
+    const set = new Set();
+    events.forEach((ev) => {
+      if (ev.start_time) {
+        const d = new Date(ev.start_time);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        set.add(key);
+      }
+    });
+    return Array.from(set).sort();
+  }, [events]);
+
+  function formatMonthLabel(key) {
+    const [year, month] = key.split("-");
+    const d = new Date(Number(year), Number(month) - 1);
+    return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+
+  const filteredEvents = events.filter((ev) => {
+    if (monthFilter === "all") return true;
+    const d = new Date(ev.start_time);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    return key === monthFilter;
+  });
+
+  // If the currently selected event falls outside the month filter, snap to the first visible one
+  useEffect(() => {
+    if (filteredEvents.length === 0) return;
+    const stillVisible = filteredEvents.some((ev) => ev.id === selectedEventId);
+    if (!stillVisible) setSelectedEventId(filteredEvents[0].id);
+  }, [monthFilter]);
 
   useEffect(() => {
     if (!selectedEventId) return;
@@ -97,21 +133,45 @@ export default function AdminFeedback({ darkMode }) {
         <p className={textSecondary}>No events created yet.</p>
       ) : (
         <>
-          <label className={`block text-xs ${textSecondary} mb-1`}>Select Event</label>
-          <select
-            value={selectedEventId}
-            onChange={(e) => setSelectedEventId(e.target.value)}
-            className={`w-full max-w-md px-3 py-2 mb-6 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
-          >
-            {events.map((ev) => (
-              <option key={ev.id} value={ev.id}>
-                {ev.title} — {new Date(ev.start_time).toLocaleDateString()}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex-1 min-w-[200px]">
+              <label className={`block text-xs ${textSecondary} mb-1`}>Select Event</label>
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+              >
+                {filteredEvents.length === 0 ? (
+                  <option value="">No events in this month</option>
+                ) : (
+                  filteredEvents.map((ev) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title} — {new Date(ev.start_time).toLocaleDateString()}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-xs ${textSecondary} mb-1`}>Month</label>
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className={`px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+              >
+                <option value="all">All months</option>
+                {availableMonths.map((key) => (
+                  <option key={key} value={key}>{formatMonthLabel(key)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {loading ? (
             <p className={textSecondary}>Loading...</p>
+          ) : filteredEvents.length === 0 ? (
+            <p className={textSecondary}>No events in the selected month.</p>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className={`${cardBg} border ${border} rounded-2xl p-5`}>
@@ -179,7 +239,7 @@ export default function AdminFeedback({ darkMode }) {
                 )}
 
                 <div className={`mt-4 pt-4 border-t ${border} text-center`}>
-                  <p className={`text-xs ${textSecondary} mb-1`}>Average rating</p>
+                  <p className={`text-xs ${textSecondary} mb-1`}>Average rating (anonymous)</p>
                   <p className={`text-2xl font-bold ${textPrimary}`}>
                     {averageRating !== null ? `${averageRating} out of 5` : "No ratings yet"}
                   </p>
