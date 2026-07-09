@@ -1,14 +1,46 @@
 import { useState, useEffect, useMemo } from "react";
+import { Star, Info } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import ScannerModal from "../ScannerModal";
+
+function StarRating({ eventId, currentRating, onRate, darkMode }) {
+  const [hover, setHover] = useState(0);
+  const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
+
+  return (
+    <div className="flex items-center gap-1 mt-2">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onRate(eventId, star)}
+          onMouseEnter={() => setHover(star)}
+          onMouseLeave={() => setHover(0)}
+          className="p-0.5"
+        >
+          <Star
+            size={16}
+            className={
+              (hover || currentRating) >= star
+                ? "fill-amber-400 text-amber-400"
+                : darkMode ? "text-neutral-600" : "text-neutral-300"
+            }
+          />
+        </button>
+      ))}
+      {currentRating > 0 && <span className={`text-xs ${textSecondary} ml-1`}>Rated</span>}
+    </div>
+  );
+}
 
 export default function MyEvents({ darkMode, user }) {
   const [registrations, setRegistrations] = useState([]);
   const [attendanceMap, setAttendanceMap] = useState({});
+  const [ratings, setRatings] = useState({});
   const [loading, setLoading] = useState(true);
   const [scanningEventId, setScanningEventId] = useState(null);
   const [message, setMessage] = useState("");
-  const [filter, setFilter] = useState("all"); // all | upcoming | attended
+  const [filter, setFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("all");
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
@@ -24,12 +56,6 @@ export default function MyEvents({ darkMode, user }) {
       .select("id, status, registered_at, events(id, title, venue, start_time, award_title)")
       .eq("student_id", user.id);
 
-    const sorted = (regData || []).sort((a, b) => {
-      const dateA = a.events?.start_time ? new Date(a.events.start_time) : new Date(0);
-      const dateB = b.events?.start_time ? new Date(b.events.start_time) : new Date(0);
-      return dateA - dateB;
-    });
-
     const { data: attData } = await supabase
       .from("attendance")
       .select("event_id")
@@ -38,12 +64,42 @@ export default function MyEvents({ darkMode, user }) {
     const attMap = {};
     (attData || []).forEach((a) => { attMap[a.event_id] = true; });
 
+    const { data: ratingData } = await supabase
+      .from("feedback")
+      .select("event_id, rating")
+      .eq("student_id", user.id);
+
+    const ratingMap = {};
+    (ratingData || []).forEach((r) => { ratingMap[r.event_id] = r.rating; });
+
+    // Non-attended events first (chronological), attended events last (chronological)
+    const sorted = (regData || []).sort((a, b) => {
+      const aAttended = attMap[a.events?.id] ? 1 : 0;
+      const bAttended = attMap[b.events?.id] ? 1 : 0;
+      if (aAttended !== bAttended) return aAttended - bAttended;
+      const dateA = a.events?.start_time ? new Date(a.events.start_time) : new Date(0);
+      const dateB = b.events?.start_time ? new Date(b.events.start_time) : new Date(0);
+      return dateA - dateB;
+    });
+
     setRegistrations(sorted);
     setAttendanceMap(attMap);
+    setRatings(ratingMap);
     setLoading(false);
   }
 
   useEffect(() => { fetchRegistrations(); }, [user.id]);
+
+  async function handleRate(eventId, rating) {
+    setRatings((prev) => ({ ...prev, [eventId]: rating }));
+    const { error } = await supabase.from("feedback").upsert(
+      { student_id: user.id, event_id: eventId, rating },
+      { onConflict: "student_id,event_id" }
+    );
+    if (error) {
+      setMessage("Could not save your rating. Please try again.");
+    }
+  }
 
   async function handleScanResult(decodedText) {
     setScanningEventId(null);
@@ -58,7 +114,7 @@ export default function MyEvents({ darkMode, user }) {
       if (error) {
         setMessage(error.message);
       } else {
-        setMessage("Attendance marked successfully!");
+        setMessage("Attendance marked successfully.");
         fetchRegistrations();
       }
     } catch {
@@ -66,7 +122,6 @@ export default function MyEvents({ darkMode, user }) {
     }
   }
 
-  // Build the list of months that actually have events, for the dropdown
   const availableMonths = useMemo(() => {
     const set = new Set();
     registrations.forEach((reg) => {
@@ -124,6 +179,7 @@ export default function MyEvents({ darkMode, user }) {
   return (
     <div className="p-6">
       <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
+        <Info size={13} className="text-blue-500" /> Click on an event to read the full details
       </p>
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
@@ -133,9 +189,7 @@ export default function MyEvents({ darkMode, user }) {
               key={btn.id}
               onClick={() => setFilter(btn.id)}
               className={`px-3.5 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                filter === btn.id
-                  ? `${cardBg} ${textPrimary} shadow-sm`
-                  : textSecondary
+                filter === btn.id ? `${cardBg} ${textPrimary} shadow-sm` : textSecondary
               }`}
             >
               {btn.label}
@@ -178,13 +232,13 @@ export default function MyEvents({ darkMode, user }) {
                 </p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   {reg.status === "registered" && (
-                    <span className="text-xs font-medium text-emerald-500">✓ Registered</span>
+                    <span className="text-xs font-medium text-emerald-500">Registered</span>
                   )}
                   {reg.status === "waitlisted" && (
                     <span className="text-xs font-medium text-amber-500">On waitlist</span>
                   )}
                   {attended && (
-                    <span className="text-xs font-medium text-blue-500">✓ Attended</span>
+                    <span className="text-xs font-medium text-blue-500">Attended</span>
                   )}
                   {isPast && <span className={`text-xs ${textSecondary}`}>• Event has passed</span>}
                 </div>
@@ -199,6 +253,15 @@ export default function MyEvents({ darkMode, user }) {
                   >
                     Scan QR for Attendance
                   </button>
+                )}
+
+                {attended && (
+                  <StarRating
+                    eventId={event.id}
+                    currentRating={ratings[event.id] || 0}
+                    onRate={handleRate}
+                    darkMode={darkMode}
+                  />
                 )}
               </div>
             );

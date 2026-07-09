@@ -4,7 +4,15 @@ import { supabase } from "../../../config/supabaseClient";
 import EventQRModal from "./EventQRModal";
 import BulkRegister from "./BulkRegister";
 
-const emptyForm = { title: "", description: "", venue: "", start_time: "", seats_total: 0, award_title: "" };
+const emptyForm = {
+  title: "",
+  description: "",
+  venue: "",
+  start_time: "",
+  seats_total: 0,
+  award_title: "",
+  certificates_enabled: false,
+};
 
 function toLocalDatetimeInputValue(isoString) {
   if (!isoString) return "";
@@ -50,6 +58,7 @@ export default function EventsManager({ darkMode }) {
       start_time: toLocalDatetimeInputValue(item.start_time),
       seats_total: item.seats_total,
       award_title: item.award_title || "",
+      certificates_enabled: item.certificates_enabled || false,
     });
     setEditing(item);
   }
@@ -109,7 +118,9 @@ export default function EventsManager({ darkMode }) {
                 <p className={`font-medium ${textPrimary}`}>{item.title}</p>
                 <p className={`text-sm ${textSecondary}`}>{item.venue} • {new Date(item.start_time).toLocaleString()}</p>
                 <p className={`text-sm ${textSecondary}`}>Seats: {item.seats_filled}/{item.seats_total}</p>
-                {item.award_title && <p className={`text-xs ${textSecondary} mt-1`}>Award: {item.award_title}</p>}
+                {item.certificates_enabled && item.award_title && (
+                  <p className={`text-xs ${textSecondary} mt-1`}>Certificate: {item.award_title}</p>
+                )}
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
                 <button onClick={() => setQrEvent(item)} className="text-blue-500"><QrCode size={16} /></button>
@@ -171,13 +182,27 @@ export default function EventsManager({ darkMode }) {
               className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
             />
 
-            <label className={`block text-xs ${textSecondary} mb-1`}>Award / Certificate Title</label>
-            <input
-              value={form.award_title}
-              onChange={(e) => setForm({ ...form, award_title: e.target.value })}
-              placeholder="e.g. Certificate of Participation"
-              className={`w-full px-3 py-2 mb-4 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
-            />
+            <label className={`flex items-center gap-2 text-sm ${textPrimary} mb-3 cursor-pointer`}>
+              <input
+                type="checkbox"
+                checked={form.certificates_enabled}
+                onChange={(e) => setForm({ ...form, certificates_enabled: e.target.checked })}
+                className="w-4 h-4"
+              />
+              Enable certificates for this event
+            </label>
+
+            {form.certificates_enabled && (
+              <>
+                <label className={`block text-xs ${textSecondary} mb-1`}>Award / Certificate Title</label>
+                <input
+                  value={form.award_title}
+                  onChange={(e) => setForm({ ...form, award_title: e.target.value })}
+                  placeholder="e.g. Certificate of Participation"
+                  className={`w-full px-3 py-2 mb-4 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+                />
+              </>
+            )}
 
             <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2.5 rounded-lg">
               Save

@@ -6,6 +6,7 @@ import EventsManager from "./admin/EventsManager";
 import NewsManager from "./admin/NewsManager";
 import AttendanceManager from "./admin/AttendanceManager";
 import SpotlightsManager from "./admin/SpotlightsManager";
+import AdminFeedback from "./admin/AdminFeedback";
 
 export default function AdminDashboard({ user }) {
   const [activeTab, setActiveTab] = useState("events");
@@ -36,20 +37,22 @@ export default function AdminDashboard({ user }) {
     window.location.reload();
   }
 
-  function renderTab() {
-    switch (activeTab) {
-      case "events":
-        return <EventsManager darkMode={darkMode} />;
-      case "news":
-        return <NewsManager darkMode={darkMode} />;
-      case "attendance":
-        return <AttendanceManager darkMode={darkMode} />;
-      case "spotlights":
-        return <SpotlightsManager darkMode={darkMode} />;
-      default:
-        return null;
-    }
+function renderTab() {
+  switch (activeTab) {
+    case "events":
+      return <EventsManager darkMode={darkMode} />;
+    case "news":
+      return <NewsManager darkMode={darkMode} />;
+    case "attendance":
+      return <AttendanceManager darkMode={darkMode} />;
+    case "spotlights":
+      return <SpotlightsManager darkMode={darkMode} />;
+    case "feedback":
+      return <AdminFeedback darkMode={darkMode} />;
+    default:
+      return null;
   }
+}
 
   return (
     <div className={`min-h-screen ${pageBg}`}>

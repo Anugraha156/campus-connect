@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { MapPin, Clock, Ticket, Award, Info } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import DetailModal from "../DetailModal";
 
@@ -116,7 +116,7 @@ export default function UpcomingEvents({ darkMode, user }) {
     if (myStatus === "registered") {
       return (
         <div className="mt-4 flex items-center gap-3">
-          <span className="text-sm text-emerald-500 font-medium">✓ Registered</span>
+          <span className="text-sm text-emerald-500 font-medium">Registered</span>
           <button onClick={() => handleCancel(item.id)} disabled={isBusy} className="text-xs text-red-500 underline">
             Cancel
           </button>
@@ -127,7 +127,7 @@ export default function UpcomingEvents({ darkMode, user }) {
       return (
         <div className="mt-4 flex items-center gap-3">
           <span className="text-sm text-amber-500 font-medium">
-            On waitlist{waitlistPositions[item.id] ? ` — #${waitlistPositions[item.id]}` : ""}
+            On waitlist{waitlistPositions[item.id] ? ` — position ${waitlistPositions[item.id]}` : ""}
           </span>
           <button onClick={() => handleCancel(item.id)} disabled={isBusy} className="text-xs text-red-500 underline">
             Leave waitlist
@@ -146,7 +146,6 @@ export default function UpcomingEvents({ darkMode, user }) {
     );
   }
 
-  // Sidebar stats
   const now = new Date();
   const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const thisWeekCount = events.filter((e) => new Date(e.start_time) <= weekFromNow).length;
@@ -163,10 +162,9 @@ export default function UpcomingEvents({ darkMode, user }) {
 
   return (
     <div className="p-6 max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
-      {/* Main list */}
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
-          <span className="text-blue-500"></span> Click on an event to read the full details
+          <Info size={13} className="text-blue-500" /> Click on an event to read the full details
         </p>
 
         <div className="space-y-2.5">
@@ -199,7 +197,7 @@ export default function UpcomingEvents({ darkMode, user }) {
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       {myStatus === "registered" && (
-                        <span className="text-xs text-emerald-500 font-medium">✓ Registered</span>
+                        <span className="text-xs text-emerald-500 font-medium">Registered</span>
                       )}
                       {myStatus === "waitlisted" && (
                         <span className="text-xs text-amber-500 font-medium">On waitlist</span>
@@ -218,17 +216,15 @@ export default function UpcomingEvents({ darkMode, user }) {
         </div>
       </div>
 
-      {/* Sidebar */}
       <div className="w-full lg:w-72 shrink-0 space-y-4">
         <div className={`${sidebarBg} border ${border} rounded-xl p-4`}>
           <label className={`block text-xs font-medium ${textSecondary} mb-2`}>Search events</label>
           <div className="relative">
-            <Search size={15} className={`absolute left-3 top-1/2 -translate-y-1/2 ${textSecondary}`} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Title or venue..."
-              className={`w-full pl-9 pr-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`w-full px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none focus:ring-2 focus:ring-blue-500`}
             />
           </div>
         </div>
@@ -253,7 +249,7 @@ export default function UpcomingEvents({ darkMode, user }) {
 
         {fillingFast.length > 0 && (
           <div className={`${sidebarBg} border ${border} rounded-xl p-4`}>
-            <p className={`text-xs font-medium ${textSecondary} mb-3`}>⚡ Filling fast</p>
+            <p className={`text-xs font-medium ${textSecondary} mb-3`}>Filling fast</p>
             <div className="space-y-2">
               {fillingFast.slice(0, 3).map((item) => (
                 <button
@@ -276,18 +272,18 @@ export default function UpcomingEvents({ darkMode, user }) {
           <p className={`text-sm ${textPrimary} whitespace-pre-wrap leading-relaxed mb-4`}>{selected.description}</p>
 
           <div className={`text-sm ${textSecondary} space-y-1.5 border-t ${border} pt-4`}>
-            <p><span className={textPrimary}>{selected.venue}</span></p>
-            <p><span className={textPrimary}>{new Date(selected.start_time).toLocaleString()}</span></p>
-            <p>
-              {" "}
+            <p className="flex items-center gap-1.5"><MapPin size={13} /> <span className={textPrimary}>{selected.venue}</span></p>
+            <p className="flex items-center gap-1.5"><Clock size={13} /> <span className={textPrimary}>{new Date(selected.start_time).toLocaleString()}</span></p>
+            <p className="flex items-center gap-1.5">
+              <Ticket size={13} />
               <span className={textPrimary}>
                 {selected.seats_total - selected.seats_filled > 0
                   ? `${selected.seats_total - selected.seats_filled} of ${selected.seats_total} seats left`
                   : `Full (${selected.seats_total}/${selected.seats_total}) — waitlist available`}
               </span>
             </p>
-            {selected.award_title && (
-              <p> <span className={textPrimary}>{selected.award_title}</span></p>
+            {selected.certificates_enabled && selected.award_title && (
+              <p className="flex items-center gap-1.5"><Award size={13} /> <span className={textPrimary}>{selected.award_title}</span></p>
             )}
           </div>
 

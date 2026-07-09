@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Trophy, UserMinus, ArrowUpCircle, Search, UserPlus } from "lucide-react";
+import { Check, X, Trophy, UserMinus, ArrowUpCircle, Search, UserPlus, Clock } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 
 export default function AttendanceManager({ darkMode }) {
@@ -24,12 +24,13 @@ export default function AttendanceManager({ darkMode }) {
 
   const selectedEvent = events.find((ev) => ev.id === selectedEventId);
   const eventHasStarted = selectedEvent && new Date(selectedEvent.start_time) <= new Date();
+  const certificatesEnabled = selectedEvent?.certificates_enabled && selectedEvent?.award_title;
 
   useEffect(() => {
     async function fetchEvents() {
       const { data } = await supabase
         .from("events")
-        .select("id, title, start_time")
+        .select("id, title, start_time, certificates_enabled, award_title")
         .order("start_time", { ascending: false });
       setEvents(data || []);
       if (data && data.length > 0) setSelectedEventId(data[0].id);
@@ -106,6 +107,15 @@ export default function AttendanceManager({ darkMode }) {
   async function saveWinner(studentId) {
     if (!winnerTitle.trim()) return;
     setBusyId(studentId);
+
+    // A winner should only hold one certificate, so remove any auto-issued participation cert
+    await supabase
+      .from("certificates")
+      .delete()
+      .eq("student_id", studentId)
+      .eq("event_id", selectedEventId)
+      .eq("type", "participation");
+
     const { error } = await supabase.from("certificates").upsert(
       {
         student_id: studentId,
@@ -131,6 +141,20 @@ export default function AttendanceManager({ darkMode }) {
       .eq("student_id", studentId)
       .eq("event_id", selectedEventId)
       .eq("type", "winner");
+
+    // Restore the participation certificate, if this event grants one and the student attended
+    if (certificatesEnabled && attendedIds.has(studentId)) {
+      await supabase.from("certificates").upsert(
+        {
+          student_id: studentId,
+          event_id: selectedEventId,
+          title: selectedEvent.award_title,
+          type: "participation",
+        },
+        { onConflict: "student_id,event_id,type" }
+      );
+    }
+
     setWinners((prev) => {
       const next = { ...prev };
       delete next[studentId];
@@ -198,7 +222,7 @@ export default function AttendanceManager({ darkMode }) {
 
   return (
     <div className="p-6">
-      <h2 className={`text-lg font-semibold ${textPrimary} mb-4`}>Manual Attendance & Registrations</h2>
+      <h2 className={`text-lg font-semibold ${textPrimary} mb-4`}>Manual Attendance and Registrations</h2>
 
       {events.length === 0 ? (
         <p className={textSecondary}>No events created yet.</p>
@@ -218,15 +242,18 @@ export default function AttendanceManager({ darkMode }) {
           </select>
 
           {selectedEvent && !eventHasStarted && (
-            <p className="text-xs text-amber-500 mb-4">
-               This event starts {new Date(selectedEvent.start_time).toLocaleString()} — attendance can be marked once it begins.
+            <p className="text-xs text-amber-500 mb-1 flex items-center gap-1.5">
+              <Clock size={13} /> This event starts {new Date(selectedEvent.start_time).toLocaleString()}. Attendance can be marked once it begins.
             </p>
           )}
           {selectedEvent && eventHasStarted && (
-            <p className={`text-xs ${textSecondary} mb-4`}>Event started — attendance can be marked.</p>
+            <p className={`text-xs ${textSecondary} mb-1`}>Event started. Attendance can be marked.</p>
           )}
+          {selectedEvent && !certificatesEnabled && (
+            <p className={`text-xs ${textSecondary} mb-4`}>Certificates are not enabled for this event.</p>
+          )}
+          {selectedEvent && certificatesEnabled && <div className="mb-4" />}
 
-          {/* Add student manually */}
           <div className={`${cardBg} border ${border} rounded-xl p-4 mb-5 max-w-md`}>
             <p className={`text-xs font-medium ${textSecondary} mb-2 flex items-center gap-1.5`}>
               <UserPlus size={14} /> Add student to this event
@@ -317,7 +344,7 @@ export default function AttendanceManager({ darkMode }) {
                           )
                         )}
 
-                        {isAttended && !winnerTitleForStudent && (
+                        {certificatesEnabled && isAttended && !winnerTitleForStudent && (
                           <button
                             onClick={() => { setWinnerFormId(reg.student_id); setWinnerTitle(""); }}
                             disabled={isBusy}
