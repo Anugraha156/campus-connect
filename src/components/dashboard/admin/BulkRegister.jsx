@@ -65,6 +65,8 @@ export default function BulkRegister({ darkMode, onClose }) {
     setRunning(false);
   }
 
+  const showingResults = results !== null;
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className={`${cardBg} border ${border} rounded-2xl p-6 w-full max-w-md`}>
@@ -79,7 +81,8 @@ export default function BulkRegister({ darkMode, onClose }) {
         <select
           value={selectedEventId}
           onChange={(e) => setSelectedEventId(e.target.value)}
-          className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+          disabled={showingResults}
+          className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
         >
           {events.map((ev) => (
             <option key={ev.id} value={ev.id}>{ev.title}</option>
@@ -92,27 +95,21 @@ export default function BulkRegister({ darkMode, onClose }) {
             value={regRange.from}
             onChange={(e) => setRegRange({ ...regRange, from: e.target.value })}
             placeholder="26BCE0005"
-            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+            disabled={showingResults}
+            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
           />
           <span className={`self-center ${textSecondary}`}>to</span>
           <input
             value={regRange.to}
             onChange={(e) => setRegRange({ ...regRange, to: e.target.value })}
             placeholder="26BCE0024"
-            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+            disabled={showingResults}
+            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
           />
         </div>
 
-        <button
-          onClick={handleRun}
-          disabled={running}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60"
-        >
-          {running ? "Registering..." : "Register All"}
-        </button>
-
         {results && (
-          <div className={`mt-4 text-sm ${textPrimary} space-y-1 border-t ${border} pt-3`}>
+          <div className={`mb-4 text-sm ${textPrimary} space-y-1 border-t ${border} pt-3`}>
             {results.error ? (
               <p className="text-red-500">{results.error}</p>
             ) : (
@@ -126,6 +123,14 @@ export default function BulkRegister({ darkMode, onClose }) {
             )}
           </div>
         )}
+
+        <button
+          onClick={showingResults ? onClose : handleRun}
+          disabled={running}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60"
+        >
+          {running ? "Registering..." : showingResults ? "Done" : "Register All"}
+        </button>
       </div>
     </div>
   );

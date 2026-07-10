@@ -3,32 +3,70 @@ import { Star, Info } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import ScannerModal from "../ScannerModal";
 
-function StarRating({ eventId, currentRating, onRate, darkMode }) {
+function StarRating({ eventId, savedRating, onSubmit, darkMode }) {
+  const [pending, setPending] = useState(0);
   const [hover, setHover] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
 
-  return (
-    <div className="flex items-center gap-1 mt-2">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => onRate(eventId, star)}
-          onMouseEnter={() => setHover(star)}
-          onMouseLeave={() => setHover(0)}
-          className="p-0.5"
-        >
+  if (savedRating > 0) {
+    return (
+      <div className="flex items-center gap-1 mt-2">
+        {[1, 2, 3, 4, 5].map((star) => (
           <Star
+            key={star}
             size={16}
-            className={
-              (hover || currentRating) >= star
-                ? "fill-amber-400 text-amber-400"
-                : darkMode ? "text-neutral-600" : "text-neutral-300"
-            }
+            className={savedRating >= star ? "fill-amber-400 text-amber-400" : darkMode ? "text-neutral-600" : "text-neutral-300"}
           />
+        ))}
+        <span className={`text-xs ${textSecondary} ml-1`}>You rated this {savedRating} out of 5</span>
+      </div>
+    );
+  }
+
+  async function handleSubmit() {
+    if (pending === 0) return;
+    const confirmed = confirm(`Submit a rating of ${pending} out of 5 for this event? You will not be able to change it afterward.`);
+    if (!confirmed) return;
+
+    setSubmitting(true);
+    await onSubmit(eventId, pending);
+    setSubmitting(false);
+  }
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setPending(star)}
+            onMouseEnter={() => setHover(star)}
+            onMouseLeave={() => setHover(0)}
+            className="p-0.5"
+          >
+            <Star
+              size={16}
+              className={
+                (hover || pending) >= star
+                  ? "fill-amber-400 text-amber-400"
+                  : darkMode ? "text-neutral-600" : "text-neutral-300"
+              }
+            />
+          </button>
+        ))}
+      </div>
+      {pending > 0 && (
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="mt-2 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg disabled:opacity-60"
+        >
+          {submitting ? "Submitting..." : "Submit Rating"}
         </button>
-      ))}
-      {currentRating > 0 && <span className={`text-xs ${textSecondary} ml-1`}>Rated</span>}
+      )}
     </div>
   );
 }
@@ -72,7 +110,6 @@ export default function MyEvents({ darkMode, user }) {
     const ratingMap = {};
     (ratingData || []).forEach((r) => { ratingMap[r.event_id] = r.rating; });
 
-    // Non-attended events first (chronological), attended events last (chronological)
     const sorted = (regData || []).sort((a, b) => {
       const aAttended = attMap[a.events?.id] ? 1 : 0;
       const bAttended = attMap[b.events?.id] ? 1 : 0;
@@ -90,14 +127,15 @@ export default function MyEvents({ darkMode, user }) {
 
   useEffect(() => { fetchRegistrations(); }, [user.id]);
 
-  async function handleRate(eventId, rating) {
-    setRatings((prev) => ({ ...prev, [eventId]: rating }));
+  async function handleRateSubmit(eventId, rating) {
     const { error } = await supabase.from("feedback").upsert(
       { student_id: user.id, event_id: eventId, rating },
       { onConflict: "student_id,event_id" }
     );
     if (error) {
       setMessage("Could not save your rating. Please try again.");
+    } else {
+      setRatings((prev) => ({ ...prev, [eventId]: rating }));
     }
   }
 
@@ -179,7 +217,7 @@ export default function MyEvents({ darkMode, user }) {
   return (
     <div className="p-6">
       <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
-       
+        <Info size={13} className="text-blue-500" /> Click on an event to read the full details
       </p>
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
@@ -258,8 +296,8 @@ export default function MyEvents({ darkMode, user }) {
                 {attended && (
                   <StarRating
                     eventId={event.id}
-                    currentRating={ratings[event.id] || 0}
-                    onRate={handleRate}
+                    savedRating={ratings[event.id] || 0}
+                    onSubmit={handleRateSubmit}
                     darkMode={darkMode}
                   />
                 )}

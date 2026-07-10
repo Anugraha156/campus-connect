@@ -29,6 +29,7 @@ export default function EventsManager({ darkMode }) {
   const [form, setForm] = useState(emptyForm);
   const [qrEvent, setQrEvent] = useState(null);
   const [showBulkRegister, setShowBulkRegister] = useState(false);
+  const [view, setView] = useState("upcoming"); // upcoming | past
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -38,12 +39,22 @@ export default function EventsManager({ darkMode }) {
 
   async function fetchEvents() {
     setLoading(true);
-    const { data } = await supabase.from("events").select("*").order("start_time");
+    const { data } = await supabase.from("events").select("*");
     setEvents(data || []);
     setLoading(false);
   }
 
   useEffect(() => { fetchEvents(); }, []);
+
+  const now = new Date();
+  const upcomingEvents = events
+    .filter((e) => new Date(e.start_time) >= now)
+    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+  const pastEvents = events
+    .filter((e) => new Date(e.start_time) < now)
+    .sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+
+  const visibleEvents = view === "upcoming" ? upcomingEvents : pastEvents;
 
   function openNew() {
     setForm(emptyForm);
@@ -106,13 +117,24 @@ export default function EventsManager({ darkMode }) {
         </div>
       </div>
 
+      <select
+        value={view}
+        onChange={(e) => setView(e.target.value)}
+        className={`px-3 py-2 mb-4 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
+      >
+        <option value="upcoming">Upcoming events ({upcomingEvents.length})</option>
+        <option value="past">Past events ({pastEvents.length})</option>
+      </select>
+
       {loading ? (
         <p className={textSecondary}>Loading...</p>
-      ) : events.length === 0 ? (
-        <p className={textSecondary}>No events created yet.</p>
+      ) : visibleEvents.length === 0 ? (
+        <p className={textSecondary}>
+          {view === "upcoming" ? "No upcoming events." : "No past events yet."}
+        </p>
       ) : (
         <div className="space-y-3">
-          {events.map((item) => (
+          {visibleEvents.map((item) => (
             <div key={item.id} className={`${cardBg} border ${border} rounded-xl p-4 flex justify-between items-start`}>
               <div>
                 <p className={`font-medium ${textPrimary}`}>{item.title}</p>
@@ -124,7 +146,9 @@ export default function EventsManager({ darkMode }) {
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
                 <button onClick={() => setQrEvent(item)} className="text-blue-500"><QrCode size={16} /></button>
-                <button onClick={() => openEdit(item)} className={textSecondary}><Pencil size={16} /></button>
+                {view === "upcoming" && (
+                  <button onClick={() => openEdit(item)} className={textSecondary}><Pencil size={16} /></button>
+                )}
                 <button onClick={() => handleDelete(item.id)} className="text-red-500"><Trash2 size={16} /></button>
               </div>
             </div>

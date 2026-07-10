@@ -26,6 +26,7 @@ export default function AdminFeedback({ darkMode }) {
       const { data } = await supabase
         .from("events")
         .select("id, title, start_time")
+        .lt("start_time", new Date().toISOString())
         .order("start_time", { ascending: true });
       setEvents(data || []);
       if (data && data.length > 0) setSelectedEventId(data[0].id);
@@ -59,7 +60,6 @@ export default function AdminFeedback({ darkMode }) {
     return key === monthFilter;
   });
 
-  // If the currently selected event falls outside the month filter, snap to the first visible one
   useEffect(() => {
     if (filteredEvents.length === 0) return;
     const stillVisible = filteredEvents.some((ev) => ev.id === selectedEventId);
@@ -130,7 +130,7 @@ export default function AdminFeedback({ darkMode }) {
       <h2 className={`text-lg font-semibold ${textPrimary} mb-4`}>Feedback and Attendance Analytics</h2>
 
       {events.length === 0 ? (
-        <p className={textSecondary}>No events created yet.</p>
+        <p className={textSecondary}>No events have concluded yet.</p>
       ) : (
         <>
           <div className="flex flex-wrap gap-3 mb-6">
@@ -179,7 +179,7 @@ export default function AdminFeedback({ darkMode }) {
                 <p className={`text-xs ${textSecondary} mb-4`}>Registered students who attended versus those who did not</p>
 
                 {attendanceTotal === 0 ? (
-                  <p className={`text-sm ${textSecondary}`}>No registrations yet for this event.</p>
+                  <p className={`text-sm ${textSecondary}`}>No registrations for this event.</p>
                 ) : (
                   <>
                     <div style={{ width: "100%", height: 240 }}>
