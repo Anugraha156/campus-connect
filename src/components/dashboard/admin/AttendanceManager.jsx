@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Trophy, UserMinus, ArrowUpCircle, Search, UserPlus, Clock } from "lucide-react";
+import { Check, X, Trophy, UserMinus, Search, UserPlus, Clock } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 
 export default function AttendanceManager({ darkMode }) {
@@ -108,7 +108,6 @@ export default function AttendanceManager({ darkMode }) {
     if (!winnerTitle.trim()) return;
     setBusyId(studentId);
 
-    // A winner should only hold one certificate, so remove any auto-issued participation cert
     await supabase
       .from("certificates")
       .delete()
@@ -142,7 +141,6 @@ export default function AttendanceManager({ darkMode }) {
       .eq("event_id", selectedEventId)
       .eq("type", "winner");
 
-    // Restore the participation certificate, if this event grants one and the student attended
     if (certificatesEnabled && attendedIds.has(studentId)) {
       await supabase.from("certificates").upsert(
         {
@@ -167,17 +165,6 @@ export default function AttendanceManager({ darkMode }) {
     if (!confirm("Remove this student's registration entirely? This cannot be undone.")) return;
     setBusyId(studentId);
     const { error } = await supabase.rpc("cancel_registration", {
-      p_event_id: selectedEventId,
-      p_student_id: studentId,
-    });
-    if (error) alert(error.message);
-    fetchRegistrationsAndAttendance(selectedEventId);
-    setBusyId(null);
-  }
-
-  async function promoteRegistration(studentId) {
-    setBusyId(studentId);
-    const { error } = await supabase.rpc("promote_registration", {
       p_event_id: selectedEventId,
       p_student_id: studentId,
     });
@@ -243,7 +230,7 @@ export default function AttendanceManager({ darkMode }) {
 
           {selectedEvent && !eventHasStarted && (
             <p className="text-xs text-amber-500 mb-1 flex items-center gap-1.5">
-               This event starts {new Date(selectedEvent.start_time).toLocaleString()}. Attendance can be marked once it begins.
+              <Clock size={13} /> This event starts {new Date(selectedEvent.start_time).toLocaleString()}. Attendance can be marked once it begins.
             </p>
           )}
           {selectedEvent && eventHasStarted && (
@@ -313,16 +300,6 @@ export default function AttendanceManager({ darkMode }) {
                       </div>
 
                       <div className="flex gap-2 flex-wrap shrink-0">
-                        {isWaitlisted && (
-                          <button
-                            onClick={() => promoteRegistration(reg.student_id)}
-                            disabled={isBusy}
-                            className="flex items-center gap-1.5 text-xs font-medium text-blue-500 border border-blue-500/30 px-3 py-1.5 rounded-lg disabled:opacity-60"
-                          >
-                            <ArrowUpCircle size={14} /> Promote
-                          </button>
-                        )}
-
                         {isAttended ? (
                           <button
                             onClick={() => removeAttendance(reg.student_id)}
