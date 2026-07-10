@@ -178,7 +178,7 @@ export default function UpcomingEvents({ darkMode, user }) {
     <div className="p-6 max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
-          <Info size={13} className="text-blue-500" /> Click on an event to read the full details
+           Click on an event to read the full details
         </p>
 
         <div className="space-y-2.5">
