@@ -341,13 +341,15 @@ export default function AttendanceManager({ darkMode }) {
                           </button>
                         )}
 
-                        <button
-                          onClick={() => cancelRegistration(reg.student_id)}
-                          disabled={isBusy}
-                          className={`flex items-center gap-1.5 text-xs font-medium ${textSecondary} border ${border} px-3 py-1.5 rounded-lg disabled:opacity-60`}
-                        >
-                          <UserMinus size={14} /> Cancel registration
-                        </button>
+                        {!eventHasStarted && (
+                          <button
+                            onClick={() => cancelRegistration(reg.student_id)}
+                            disabled={isBusy}
+                            className={`flex items-center gap-1.5 text-xs font-medium ${textSecondary} border ${border} px-3 py-1.5 rounded-lg disabled:opacity-60`}
+                          >
+                            <UserMinus size={14} /> Cancel registration
+                          </button>
+                        )}
                       </div>
                     </div>
 
