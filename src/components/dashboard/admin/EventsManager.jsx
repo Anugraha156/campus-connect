@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, QrCode, UserPlus } from "lucide-react";
+import { Plus, Pencil, Trash2, X, QrCode, UserPlus, RefreshCw } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import EventQRModal from "./EventQRModal";
 import BulkRegister from "./BulkRegister";
@@ -29,7 +29,7 @@ export default function EventsManager({ darkMode }) {
   const [form, setForm] = useState(emptyForm);
   const [qrEvent, setQrEvent] = useState(null);
   const [showBulkRegister, setShowBulkRegister] = useState(false);
-  const [view, setView] = useState("upcoming"); // upcoming | past
+  const [view, setView] = useState("upcoming");
 
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-500";
@@ -102,6 +102,13 @@ export default function EventsManager({ darkMode }) {
       <div className="flex justify-between items-center mb-4">
         <h2 className={`text-lg font-semibold ${textPrimary}`}>Events</h2>
         <div className="flex gap-2">
+          <button
+            onClick={fetchEvents}
+            className={`flex items-center gap-1.5 border ${border} ${textPrimary} text-sm font-medium px-3 py-2 rounded-lg hover:bg-black/5`}
+            title="Refresh"
+          >
+            <RefreshCw size={16} />
+          </button>
           <button
             onClick={() => setShowBulkRegister(true)}
             className={`flex items-center gap-1.5 border ${border} ${textPrimary} text-sm font-medium px-4 py-2 rounded-lg hover:bg-black/5`}
