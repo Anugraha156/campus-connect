@@ -33,7 +33,7 @@ export default function UpcomingEvents({ darkMode, user }) {
   const inputBg = darkMode ? "bg-neutral-700" : "bg-neutral-50";
   const sidebarBg = darkMode ? "bg-neutral-800" : "bg-white";
 
-  async function fetchData() {
+  async function fetchData(keepSelectedOpen = false) {
     setLoading(true);
     const { data: eventsData } = await supabase
       .from("events")
@@ -66,7 +66,7 @@ export default function UpcomingEvents({ darkMode, user }) {
     setWaitlistPositions(positions);
     setLoading(false);
 
-    if (selected) {
+    if (keepSelectedOpen && selected) {
       const updated = (eventsData || []).find((e) => e.id === selected.id);
       if (updated) setSelected(updated);
     }
@@ -80,8 +80,15 @@ export default function UpcomingEvents({ darkMode, user }) {
       p_event_id: eventId,
       p_student_id: user.id,
     });
-    if (error) alert(error.message);
     setActionLoading(null);
+
+    if (error) {
+      alert(error.message);
+      fetchData(true);
+      return;
+    }
+
+    setSelected(null);
     fetchData();
   }
 
@@ -92,8 +99,15 @@ export default function UpcomingEvents({ darkMode, user }) {
       p_event_id: eventId,
       p_student_id: user.id,
     });
-    if (error) alert(error.message);
     setActionLoading(null);
+
+    if (error) {
+      alert(error.message);
+      fetchData(true);
+      return;
+    }
+
+    setSelected(null);
     fetchData();
   }
 
@@ -164,7 +178,7 @@ export default function UpcomingEvents({ darkMode, user }) {
     <div className="p-6 max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-medium ${textPrimary} mb-4 flex items-center gap-1.5`}>
-             Click on an event to read the full details
+          <Info size={13} className="text-blue-500" /> Click on an event to read the full details
         </p>
 
         <div className="space-y-2.5">
