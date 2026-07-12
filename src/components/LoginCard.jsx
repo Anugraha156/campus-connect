@@ -107,9 +107,12 @@ export default function LoginCard({ onLoginSuccess }) {
       <div className="absolute inset-0" style={{ background: overlayGradient }} />
 
       <div className="relative z-10 flex flex-col h-screen p-10">
-        <p className="text-white text-4xl md:text-5xl font-bold tracking-tight mb-10 drop-shadow-md">
-          CampusConnect
-        </p>
+  <div className="flex items-center gap-3 mb-10">
+    <GraduationCap size={40} className="text-white drop-shadow-md" />
+    <p className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">
+      CampusConnect
+    </p>
+  </div>
 
         <div className="max-w-md">
           <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-4">
