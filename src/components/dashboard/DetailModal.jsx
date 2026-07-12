@@ -11,16 +11,23 @@ export default function DetailModal({ darkMode, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className={`${cardBg} border ${border} rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto relative`}
+        className={`${cardBg} border ${border} rounded-2xl w-[95vw] max-w-5xl max-h-[90vh] flex flex-col overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className={`absolute top-4 right-4 ${textSecondary} hover:opacity-70`}
-        >
-          <X size={20} />
-        </button>
-        {children}
+        {/* Dedicated header strip, always separate from content/images below */}
+        <div className={`flex justify-end items-center px-4 py-3 border-b ${border} shrink-0`}>
+          <button
+            onClick={onClose}
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${textSecondary} hover:bg-black/5 transition-colors`}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Scrollable content area, image and text both live here */}
+        <div className="overflow-y-auto px-6 py-5">
+          {children}
+        </div>
       </div>
     </div>
   );
