@@ -25,8 +25,8 @@ export default function DetailModal({ darkMode, onClose, children }) {
         </div>
 
         {/* Scrollable content area, image and text both live here */}
-        <div className="overflow-y-auto px-6 py-5">
-          {children}
+        <div className="overflow-y-auto overscroll-contain px-6 py-5">
+        {children}
         </div>
       </div>
     </div>
