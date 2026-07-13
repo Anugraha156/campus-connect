@@ -4,6 +4,19 @@ import { supabase } from "../../../config/supabaseClient";
 import EventQRModal from "./EventQRModal";
 import BulkRegister from "./BulkRegister";
 
+const VENUES = [
+  "Pearl Hall, Netaji Subash Chandra Bose Block",
+  "Vivekananda Auditorium, A1 Block",
+  "A2 Block G23",
+  "Anna Auditorium",
+  "Indira Gandhi Hall",
+  "Ambedkar Auditorium",
+  "SJT Hall",
+  "Fortuna Auditorium",
+  "Main Ground",
+  "Central Library Hall",
+];
+
 const emptyForm = {
   title: "",
   description: "",
@@ -188,11 +201,17 @@ export default function EventsManager({ darkMode }) {
             />
 
             <label className={`block text-xs ${textSecondary} mb-1`}>Venue</label>
-            <input
+            <select
+              required
               value={form.venue}
               onChange={(e) => setForm({ ...form, venue: e.target.value })}
               className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
-            />
+            >
+              <option value="" disabled>Select a venue</option>
+              {VENUES.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
 
             <label className={`block text-xs ${textSecondary} mb-1`}>Start Time</label>
             <input
