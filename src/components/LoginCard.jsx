@@ -108,11 +108,13 @@ export default function LoginCard({ onLoginSuccess }) {
 
       <div className="relative z-10 flex flex-col h-screen p-10">
         <div className="flex items-center gap-4 mb-10">
-          <GraduationCap size={56} className="text-white drop-shadow-md shrink-0" strokeWidth={2} />
-          <p className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">
-            CampusConnect
-          </p>
-        </div>
+  <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-[2px] border border-white/10 flex items-center justify-center shrink-0">
+  <GraduationCap size={32} className="text-white" strokeWidth={2} />
+</div>
+  <p className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">
+    CampusConnect
+  </p>
+</div>
 
         <div className="max-w-md">
           <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-4">
@@ -141,7 +143,9 @@ export default function LoginCard({ onLoginSuccess }) {
         <div className={`w-full max-w-sm ${cardBg} border ${borderColor} rounded-2xl p-7 shadow-2xl transition-colors`}>
 
           <div className="flex justify-center mb-3">
-            <GraduationCap size={40} className="text-blue-600" strokeWidth={2} />
+          <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center">
+          <GraduationCap size={22} className="text-blue-600" />
+          </div>
           </div>
 
           <p className="text-center text-sm text-blue-600 mb-5">{theme.portalSubtitle}</p>
