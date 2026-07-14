@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Clock, Ticket, Award, Info } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import DetailModal from "../DetailModal";
+import EventsCalendar from "../EventsCalendar";
 
 function DateBadge({ date, darkMode }) {
   const d = new Date(date);
@@ -174,6 +175,8 @@ export default function UpcomingEvents({ darkMode, user }) {
     return e.title.toLowerCase().includes(q) || (e.venue || "").toLowerCase().includes(q);
   });
 
+  const myRegisteredEvents = events.filter((e) => myRegistrations[e.id] === "registered");
+
   return (
     <div className="p-6 max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
       <div className="flex-1 min-w-0">
@@ -243,6 +246,13 @@ export default function UpcomingEvents({ darkMode, user }) {
           </div>
         </div>
 
+        <EventsCalendar
+          events={myRegisteredEvents}
+          darkMode={darkMode}
+          onSelectEvent={(ev) => setSelected(ev)}
+          title="My Events Calendar"
+        />
+
         <div className={`${sidebarBg} border ${border} rounded-xl p-4`}>
           <p className={`text-xs font-medium ${textSecondary} mb-3`}>Quick stats</p>
           <div className="space-y-2.5">
@@ -281,7 +291,7 @@ export default function UpcomingEvents({ darkMode, user }) {
 
       {selected && (
         <DetailModal darkMode={darkMode} onClose={() => setSelected(null)}>
-          <h2 className={`text-xl font-semibold ${textPrimary} mb-3 pr-8`}>{selected.title}</h2>
+          <h2 className={`text-xl font-semibold ${textPrimary} mb-3`}>{selected.title}</h2>
 
           <p className={`text-sm ${textPrimary} whitespace-pre-wrap leading-relaxed mb-4`}>{selected.description}</p>
 

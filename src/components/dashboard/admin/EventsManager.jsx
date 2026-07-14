@@ -1,8 +1,18 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, QrCode, UserPlus, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, X, QrCode, UserPlus, RefreshCw, Calendar, Clock } from "lucide-react";
 import { supabase } from "../../../config/supabaseClient";
 import EventQRModal from "./EventQRModal";
 import BulkRegister from "./BulkRegister";
+
+const emptyForm = {
+  title: "",
+  description: "",
+  venue: "",
+  start_time: "",
+  seats_total: 0,
+  award_title: "",
+  certificates_enabled: false,
+};
 
 const VENUES = [
   "Pearl Hall, Netaji Subash Chandra Bose Block",
@@ -16,16 +26,6 @@ const VENUES = [
   "Main Ground",
   "Central Library Hall",
 ];
-
-const emptyForm = {
-  title: "",
-  description: "",
-  venue: "",
-  start_time: "",
-  seats_total: 0,
-  award_title: "",
-  certificates_enabled: false,
-};
 
 function toLocalDatetimeInputValue(isoString) {
   if (!isoString) return "";
@@ -108,6 +108,16 @@ export default function EventsManager({ darkMode }) {
     if (!confirm("Delete this event? This will also remove related registrations.")) return;
     await supabase.from("events").delete().eq("id", id);
     fetchEvents();
+  }
+
+  const [datePart, timePart] = form.start_time ? form.start_time.split("T") : ["", ""];
+
+  function updateDate(newDate) {
+    setForm({ ...form, start_time: `${newDate}T${timePart || "09:00"}` });
+  }
+
+  function updateTime(newTime) {
+    setForm({ ...form, start_time: `${datePart || ""}T${newTime}` });
   }
 
   return (
@@ -213,14 +223,29 @@ export default function EventsManager({ darkMode }) {
               ))}
             </select>
 
-            <label className={`block text-xs ${textSecondary} mb-1`}>Start Time</label>
-            <input
-              required
-              type="datetime-local"
-              value={form.start_time}
-              onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-              className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none`}
-            />
+            <label className={`block text-xs ${textSecondary} mb-1`}>Date and Time</label>
+            <div className="flex gap-2 mb-3">
+              <div className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${border} ${inputBg}`}>
+                <Calendar size={15} className={textSecondary} />
+                <input
+                  required
+                  type="date"
+                  value={datePart}
+                  onChange={(e) => updateDate(e.target.value)}
+                  className={`w-full bg-transparent ${textPrimary} text-sm outline-none`}
+                />
+              </div>
+              <div className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${border} ${inputBg}`}>
+                <Clock size={15} className={textSecondary} />
+                <input
+                  required
+                  type="time"
+                  value={timePart}
+                  onChange={(e) => updateTime(e.target.value)}
+                  className={`w-full bg-transparent ${textPrimary} text-sm outline-none`}
+                />
+              </div>
+            </div>
 
             <label className={`block text-xs ${textSecondary} mb-1`}>Total Seats</label>
             <input
