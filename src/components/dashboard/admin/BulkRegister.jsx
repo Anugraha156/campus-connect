@@ -17,7 +17,11 @@ export default function BulkRegister({ darkMode, onClose }) {
 
   useEffect(() => {
     async function fetchEvents() {
-      const { data } = await supabase.from("events").select("id, title").order("start_time");
+      const { data } = await supabase
+        .from("events")
+        .select("id, title")
+        .gt("start_time", new Date().toISOString())
+        .order("start_time");
       setEvents(data || []);
       if (data && data.length > 0) setSelectedEventId(data[0].id);
     }
@@ -65,7 +69,12 @@ export default function BulkRegister({ darkMode, onClose }) {
     setRunning(false);
   }
 
-  const showingResults = results !== null;
+  function handleTryAgain() {
+    setResults(null);
+  }
+
+  const showingSuccess = results !== null && !results.error;
+  const showingError = results !== null && results.error;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -77,60 +86,66 @@ export default function BulkRegister({ darkMode, onClose }) {
           <button onClick={onClose}><X size={18} className={textSecondary} /></button>
         </div>
 
-        <label className={`block text-xs ${textSecondary} mb-1`}>Event</label>
-        <select
-          value={selectedEventId}
-          onChange={(e) => setSelectedEventId(e.target.value)}
-          disabled={showingResults}
-          className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
-        >
-          {events.map((ev) => (
-            <option key={ev.id} value={ev.id}>{ev.title}</option>
-          ))}
-        </select>
+        {events.length === 0 ? (
+          <p className={`text-sm ${textSecondary}`}>No upcoming events available.</p>
+        ) : (
+          <>
+            <label className={`block text-xs ${textSecondary} mb-1`}>Event</label>
+            <select
+              value={selectedEventId}
+              onChange={(e) => setSelectedEventId(e.target.value)}
+              disabled={showingSuccess}
+              className={`w-full px-3 py-2 mb-3 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
+            >
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>{ev.title}</option>
+              ))}
+            </select>
 
-        <label className={`block text-xs ${textSecondary} mb-1`}>Registration Number Range</label>
-        <div className="flex gap-2 mb-4">
-          <input
-            value={regRange.from}
-            onChange={(e) => setRegRange({ ...regRange, from: e.target.value })}
-            placeholder="26BCE0005"
-            disabled={showingResults}
-            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
-          />
-          <span className={`self-center ${textSecondary}`}>to</span>
-          <input
-            value={regRange.to}
-            onChange={(e) => setRegRange({ ...regRange, to: e.target.value })}
-            placeholder="26BCE0024"
-            disabled={showingResults}
-            className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
-          />
-        </div>
+            <label className={`block text-xs ${textSecondary} mb-1`}>Registration Number Range</label>
+            <div className="flex gap-2 mb-4">
+              <input
+                value={regRange.from}
+                onChange={(e) => setRegRange({ ...regRange, from: e.target.value })}
+                placeholder="26BCE0005"
+                disabled={showingSuccess}
+                className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
+              />
+              <span className={`self-center ${textSecondary}`}>to</span>
+              <input
+                value={regRange.to}
+                onChange={(e) => setRegRange({ ...regRange, to: e.target.value })}
+                placeholder="26BCE0024"
+                disabled={showingSuccess}
+                className={`flex-1 px-3 py-2 rounded-lg border ${border} ${inputBg} ${textPrimary} text-sm outline-none disabled:opacity-60`}
+              />
+            </div>
 
-        {results && (
-          <div className={`mb-4 text-sm ${textPrimary} space-y-1 border-t ${border} pt-3`}>
-            {results.error ? (
-              <p className="text-red-500">{results.error}</p>
-            ) : (
-              <>
-                <p>Total matched: <strong>{results.total}</strong></p>
-                <p className="text-emerald-500">Registered: {results.registered}</p>
-                <p className="text-amber-500">Waitlisted: {results.waitlisted}</p>
-                <p className={textSecondary}>Already registered: {results.already}</p>
-                {results.failed > 0 && <p className="text-red-500">Failed: {results.failed}</p>}
-              </>
+            {results && (
+              <div className={`mb-4 text-sm ${textPrimary} space-y-1 border-t ${border} pt-3`}>
+                {results.error ? (
+                  <p className="text-red-500">{results.error}</p>
+                ) : (
+                  <>
+                    <p>Total matched: <strong>{results.total}</strong></p>
+                    <p className="text-emerald-500">Registered: {results.registered}</p>
+                    <p className="text-amber-500">Waitlisted: {results.waitlisted}</p>
+                    <p className={textSecondary}>Already registered: {results.already}</p>
+                    {results.failed > 0 && <p className="text-red-500">Failed: {results.failed}</p>}
+                  </>
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        <button
-          onClick={showingResults ? onClose : handleRun}
-          disabled={running}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60"
-        >
-          {running ? "Registering..." : showingResults ? "Done" : "Register All"}
-        </button>
+            <button
+              onClick={showingSuccess ? onClose : showingError ? handleTryAgain : handleRun}
+              disabled={running}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60"
+            >
+              {running ? "Registering..." : showingSuccess ? "Done" : showingError ? "Try Again" : "Register All"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
